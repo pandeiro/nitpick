@@ -5,7 +5,7 @@ on:
     paths-ignore:
       - "*.md"
     branches-ignore:
-      - master
+      - main
   workflow_call:
 
 # Ensure that multiple runs on the same branch do not overlap.

@@ -1,8 +1,14 @@
-# Nitter
+# Nitpick
 
-[![Test Matrix](https://github.com/zedeus/nitter/workflows/Tests/badge.svg)](https://github.com/zedeus/nitter/actions/workflows/run-tests.yml)
-[![Test Matrix](https://github.com/zedeus/nitter/workflows/Docker/badge.svg)](https://github.com/zedeus/nitter/actions/workflows/build-docker.yml)
-[![License](https://img.shields.io/github/license/zedeus/nitter?style=flat)](#license)
+(Fork of [Nitter](https://github.com/zedeus/nitter))
+
+## Rationale
+
+Attempts to add custom features to Nitter such as follow lists, chronological feeds, etc.
+
+---
+
+## Original Nitter Docs
 
 > [!NOTE]
 > Running a Nitter instance now requires real accounts, since Twitter removed the previous methods. \
