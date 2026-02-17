@@ -8,13 +8,13 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Backend & Data Layer' (Protocol in workflow.md)
 
 ## Phase 2: Frontend Implementation
-- [ ] Task: Add "Pin" button to the tweet component.
-    - [ ] Modify `src/views/tweet.nim` to include the Pin icon/interaction.
-    - [ ] Add SCSS for the subtle Pin button in `src/sass/tweet/`.
-- [ ] Task: Create the Pinned Tweets archive view.
-    - [ ] Implement `src/views/pinned.nim` using Karax with a modernized aesthetic.
-    - [ ] Register the `/pinned` route in `src/nitter.nim`.
-    - [ ] Add SCSS for the modernized gallery view.
+- [x] Task: Add "Pin" button to the tweet component. (1bc9a90)
+    - [x] Modify `src/views/tweet.nim` to include the Pin icon/interaction.
+    - [x] Add SCSS for the subtle Pin button in `src/sass/tweet/`.
+- [x] Task: Create the Pinned Tweets archive view. (1bc9a90)
+    - [x] Implement `src/views/pinned.nim` using Karax with a modernized aesthetic.
+    - [x] Register the `/pinned` route in `src/nitter.nim`.
+    - [x] Add SCSS for the modernized gallery view.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Frontend Implementation' (Protocol in workflow.md)
 
 ## Phase 3: Polish & Verification

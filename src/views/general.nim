@@ -29,6 +29,7 @@ proc renderNavbar(cfg: Config; req: Request; rss, canonical: string): VNode =
 
       tdiv(class="nav-item right"):
         icon "search", title="Search", href="/search"
+        icon "pin", title="Pinned Tweets", href="/pinned"
         if rss.len > 0:
           icon "rss", title="RSS Feed", href=rss
         icon "bird", title="Open in X", href=canonical

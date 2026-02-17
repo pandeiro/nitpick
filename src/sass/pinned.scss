@@ -1,0 +1,90 @@
+@import "_variables";
+
+.pinned-container {
+  max-width: 1200px !important;
+  margin: auto;
+}
+
+.pinned-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 15px;
+  padding: 15px;
+  background-color: var(--bg_color);
+}
+
+.pinned-item {
+  background-color: var(--bg_panel);
+  border: 1px solid var(--border_grey);
+  border-radius: 4px;
+  transition: border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    border-color: var(--accent);
+    
+    .pin-btn {
+       opacity: 1;
+    }
+  }
+
+  .timeline-item {
+     padding: 15px;
+     height: 100%;
+     box-sizing: border-box;
+     background: transparent;
+     border: none;
+     display: flex;
+     flex-direction: column;
+     pointer-events: none;
+  }
+
+  .tweet-link {
+     pointer-events: all;
+  }
+
+  // Gallery tweaks
+  .tweet-avatar {
+     display: none !important;
+  }
+
+  .tweet-body {
+     margin-left: 0 !important;
+     display: flex;
+     flex-direction: column;
+     height: 100%;
+     pointer-events: none;
+  }
+
+  .tweet-content {
+     pointer-events: all;
+     flex: 1;
+  }
+
+  .tweet-header {
+     margin-bottom: 0.8em;
+     pointer-events: all;
+  }
+
+  .tweet-stats {
+     margin-top: auto;
+     padding-top: 15px;
+     border-top: 1px solid var(--border_grey);
+     pointer-events: all;
+  }
+
+  .pin-btn {
+     opacity: 0.6;
+     transition: opacity 0.2s;
+  }
+}
+
+@media (max-width: 600px) {
+  .pinned-gallery {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+}
