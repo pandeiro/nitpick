@@ -276,6 +276,7 @@ type
     title*: string
     hostname*: string
     staticDir*: string
+    logo*: string
 
     hmacKey*: string
     base64Media*: bool

@@ -22,6 +22,7 @@ proc getConfig*(path: string): (Config, parseCfg.Config) =
     useHttps: cfg.get("Server", "https", true),
     httpMaxConns: cfg.get("Server", "httpMaxConnections", 100),
     staticDir: cfg.get("Server", "staticDir", "./public"),
+    logo: cfg.get("Server", "logo", "logo.png"),
     title: cfg.get("Server", "title", "Nitter"),
     hostname: cfg.get("Server", "hostname", "nitter.net"),
 
