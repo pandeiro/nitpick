@@ -23,6 +23,7 @@ proc getConfig*(path: string): (Config, parseCfg.Config) =
     httpMaxConns: cfg.get("Server", "httpMaxConnections", 100),
     staticDir: cfg.get("Server", "staticDir", "./public"),
     logo: cfg.get("Server", "logo", "logo.png"),
+    favicon: cfg.get("Server", "favicon", "favicon.ico"),
     title: cfg.get("Server", "title", "Nitter"),
     hostname: cfg.get("Server", "hostname", "nitter.net"),
 

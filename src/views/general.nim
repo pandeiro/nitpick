@@ -56,9 +56,13 @@ proc renderHead*(prefs: Prefs; cfg: Config; req: Request; titleText=""; desc="";
     if theme.len > 0:
       link(rel="stylesheet", type="text/css", href=(&"/css/themes/{theme}.css"))
 
-    link(rel="apple-touch-icon", sizes="180x180", href="/apple-touch-icon.png")
-    link(rel="icon", type="image/png", sizes="32x32", href="/favicon-32x32.png")
-    link(rel="icon", type="image/png", sizes="16x16", href="/favicon-16x16.png")
+    if cfg.favicon == "favicon.ico":
+      link(rel="apple-touch-icon", sizes="180x180", href="/apple-touch-icon.png")
+      link(rel="icon", type="image/png", sizes="32x32", href="/favicon-32x32.png")
+      link(rel="icon", type="image/png", sizes="16x16", href="/favicon-16x16.png")
+    else:
+      link(rel="icon", href=("/" & cfg.favicon))
+
     link(rel="manifest", href="/site.webmanifest")
     link(rel="mask-icon", href="/safari-pinned-tab.svg", color="#ff6c60")
     link(rel="search", type="application/opensearchdescription+xml", title=cfg.title,
