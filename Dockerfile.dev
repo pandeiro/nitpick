@@ -1,0 +1,18 @@
+FROM nimlang/nim:2.2.0-alpine-regular
+
+RUN apk --no-cache add libsass-dev pcre build-base
+
+WORKDIR /src
+
+# We don't COPY here because we'll use volumes in docker-compose.dev.yml
+# But we might want to install deps first to speed up things if nitter.nimble hasn't changed.
+# However, if we mount the volume over /src, any files copied here will be obscured.
+
+# Better approach for dev:
+# 1. Install system deps.
+# 2. Use a shell script as ENTRYPOINT that runs nimble install --depsOnly then nimble build/run.
+
+COPY ./docker-entrypoint.dev.sh /docker-entrypoint.dev.sh
+RUN chmod +x /docker-entrypoint.dev.sh
+
+ENTRYPOINT ["/docker-entrypoint.dev.sh"]

@@ -1,0 +1,28 @@
+services:
+  nitpick-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: nitpick-dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/src:Z
+    depends_on:
+      - nitter-redis
+    environment:
+      - NIMBLE_DIR=/src/.nimble
+    stdin_open: true
+    tty: true
+
+  nitter-redis:
+    image: redis:6-alpine
+    container_name: nitpick-redis-dev
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - nitter-redis-dev:/data
+    ports:
+      - "6379:6379"
+
+volumes:
+  nitter-redis-dev:

@@ -20,6 +20,7 @@
 
 ## Infrastructure & DevOps
 - **Containerization:** Docker & Docker Compose
+- **Development Environment:** `docker-compose.dev.yml` with hot-reload support (via volumes and custom `Dockerfile.dev`)
 - **CI/CD:** Travis CI, GitHub Workflows
 - **Deployment:** systemd service support, reverse proxy (Nginx/Apache recommended)
 
