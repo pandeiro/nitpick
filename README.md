@@ -124,11 +124,12 @@ $ cp nitter.example.conf nitter.conf
 Because local Nim/Redis configurations can be fragile, it is highly recommended to use the provided Docker environment for all development and testing.
 
 ```bash
-make dev     # Start Nitpick and Redis in the background
-make build   # Rebuild the development container
-make test    # Run integration tests against the dev environment
-make logs    # Follow application logs
-make down    # Stop the development environment
+make dev          # Start Nitpick and Redis in the background
+make build        # Rebuild the development container
+make test         # Run integration tests (Headless - won't steal focus)
+make test-headed  # Run integration tests with a visible browser window
+make logs         # Follow application logs
+make down         # Stop the development environment
 ```
 
 The Docker environment automatically handles dependency installation, SCSS compilation, and configuration setup (`nitter.conf`). It exposes Nitpick on `http://localhost:7000`.

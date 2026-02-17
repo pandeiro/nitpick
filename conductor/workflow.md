@@ -160,14 +160,18 @@ make dev
 # Rebuild the development container after dependency changes
 make build
 
-# Run integration tests
+# Run integration tests (Headless - won't steal focus)
 make test
+
+# Run integration tests with a visible browser window
+make test-headed
 
 # View real-time logs
 make logs
 
 # Stop the environment
 make down
+```
 ```
 
 ### Local Development (Deprecated/Internal)

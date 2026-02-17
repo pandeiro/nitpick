@@ -10,14 +10,19 @@ dev:
 build:
 	docker-compose -f docker-compose.dev.yml build
 
-# Run the integration tests using the dev environment
+# Run the integration tests using the dev environment (Headless by default)
 test:
-	# Ensure the dev container is up. This might need tweaking based on how the test runner works.
-	# Typically, we want to run tests inside the container or against the running service.
+	# Ensure the dev container is up.
 	docker-compose -f docker-compose.dev.yml up -d
 	# Give it a second to start
 	sleep 5
-	# Run pytest against the exposed port 7000 (as mapped in docker-compose.dev.yml)
+	# Run pytest against the exposed port 7000 in headless mode
+	pytest tests --headless
+
+# Run integration tests with a visible browser window (Headed)
+test-headed:
+	docker-compose -f docker-compose.dev.yml up -d
+	sleep 5
 	pytest tests
 
 # Stop and remove containers
