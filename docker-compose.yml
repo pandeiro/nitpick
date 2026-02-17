@@ -1,7 +1,4 @@
-version: "3"
-
 services:
-
   nitter:
     image: pandeiro/nitpick:latest
     container_name: nitpick
