@@ -242,6 +242,10 @@ proc setPinnedStatus*(tweets: seq[Tweet]) {.async.} =
     if tweet != nil and tweet.id != 0:
       tweet.pinned = await isPinned(tweet.id)
 
+proc setPinnedStatus*(threads: seq[Tweets]) {.async.} =
+  for thread in threads:
+    await setPinnedStatus(thread)
+
 proc isFollowing*(username: string): Future[bool] {.async.} =
   if username.len == 0: return false
   let name = toLower(username)

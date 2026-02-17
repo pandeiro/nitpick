@@ -4,7 +4,7 @@ import asyncdispatch, strutils
 import jester, karax/vdom
 
 import router_utils
-import ".."/[types, redis_cache]
+import ".."/[types, redis_cache, api]
 import ../views/[general, pinned]
 
 export pinned

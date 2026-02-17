@@ -12,7 +12,7 @@ export router_utils
 export api, formatters, redis_cache
 export status
 
-proc setPinStatus(conv: Conversation) {.async.} =
+proc setConversationPinStatus*(conv: Conversation) {.async.} =
   if conv.tweet != nil:
     conv.tweet.pinned = await isPinned(conv.tweet.id)
   for chain in [conv.before, conv.after]:
@@ -50,7 +50,7 @@ proc createStatusRouter*(cfg: Config) =
           error = conv.tweet.tombstone
         resp Http404, showError(error, cfg)
 
-      await setPinStatus(conv)
+      await setConversationPinStatus(conv)
 
       let
         title = pageTitle(conv.tweet)
