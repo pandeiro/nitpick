@@ -39,7 +39,8 @@ proc createListRouter*(cfg: Config) =
         prefs = requestPrefs()
         list = await getCachedList(id=(@"id"))
         timeline = await getGraphListTweets(list.id, getCursor())
-        vnode = renderTimelineTweets(timeline, prefs, request.path)
+      await setPinnedStatus(timeline.content)
+      let vnode = renderTimelineTweets(timeline, prefs, request.path)
       respList(list, timeline, list.title, vnode)
 
     get "/i/lists/@id/members":

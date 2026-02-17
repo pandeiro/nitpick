@@ -61,13 +61,17 @@ proc fetchProfile*(after: string; query: Query; skipRail=false): Future[Profile]
   result.photoRail = await rail
 
   result.tweets.query = query
+  
+  # Check pin status for all tweets in the timeline
+  await setPinnedStatus(result.tweets.content)
 
 proc showTimeline*(request: Request; query: Query; cfg: Config; prefs: Prefs;
                    rss, after: string): Future[string] {.async.} =
   if query.fromUser.len != 1:
     let
       timeline = await getGraphTweetSearch(query, after)
-      html = renderTweetSearch(timeline, prefs, getPath())
+    await setPinnedStatus(timeline.content)
+    let html = renderTweetSearch(timeline, prefs, getPath())
     return renderMain(html, request, cfg, prefs, "Multi", rss=rss)
 
   var profile = await fetchProfile(after, query)
@@ -115,7 +119,7 @@ proc createTimelineRouter*(cfg: Config) =
 
     get "/@name/?@tab?/?":
       cond '.' notin @"name"
-      cond @"name" notin ["pic", "gif", "video", "search", "settings", "login", "intent", "i", "following"]
+      cond @"name" notin ["pic", "gif", "video", "search", "settings", "login", "intent", "i", "following", "pinned"]
       cond @"name".allCharsInSet({'a'..'z', 'A'..'Z', '0'..'9', '_', ','})
       cond @"tab" in ["with_replies", "media", "search", ""]
       let
@@ -132,6 +136,7 @@ proc createTimelineRouter*(cfg: Config) =
         if query.fromUser.len != 1:
           var timeline = await getGraphTweetSearch(query, after)
           if timeline.content.len == 0: resp Http404
+          await setPinnedStatus(timeline.content)
           timeline.beginning = true
           resp $renderTweetSearch(timeline, prefs, getPath())
         else:

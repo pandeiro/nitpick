@@ -76,6 +76,10 @@ proc setEx(key: string; time: int; data: string) {.async.} =
   pool.withAcquire(r):
     dawait r.setEx(key, time, data)
 
+proc setKey(key: string; data: string) {.async.} =
+  pool.withAcquire(r):
+    dawait r.setk(key, data)
+
 proc cacheUserId(username, id: string) {.async.} =
   if username.len == 0 or id.len == 0: return
   let name = toLower(username)
@@ -194,6 +198,53 @@ proc getCachedRss*(key: string): Future[Rss] {.async.} =
       result.cursor.setLen 0
 
 template followingKey(): string = "following:global"
+template pinnedIdsKey(): string = "pinned:ids"
+template pinnedTweetKey(tweetId: int64): string = "pinned:" & $tweetId
+
+proc isPinned*(tweetId: int64): Future[bool] {.async.} =
+  pool.withAcquire(r):
+    result = await r.sIsMember(pinnedIdsKey(), $tweetId)
+
+proc pinTweet*(tweet: Tweet): Future[bool] {.async.} =
+  if tweet.isNil or tweet.id == 0: return false
+  let tweetId = $tweet.id
+  pool.withAcquire(r):
+    # Add to pinned IDs set (idempotent)
+    discard await r.sAdd(pinnedIdsKey(), tweetId)
+    # Store serialized tweet data without expiry (persistent until unpinned)
+    await setKey(pinnedTweetKey(tweet.id), compress(toFlatty(tweet)))
+    result = true
+
+proc unpinTweet*(tweetId: int64): Future[bool] {.async.} =
+  pool.withAcquire(r):
+    # Remove from pinned IDs set
+    discard await r.sRem(pinnedIdsKey(), $tweetId)
+    # Delete tweet data key
+    dawait r.del(pinnedTweetKey(tweetId))
+    result = true
+
+proc getPinnedTweets*(): Future[seq[Tweet]] {.async.} =
+  pool.withAcquire(r):
+    let ids = await r.sMembers(pinnedIdsKey())
+    result = @[]
+    for id in ids:
+      if id.len == 0: continue
+      let data = await r.get(pinnedTweetKey(parseInt(id)))
+      if data != redisNil and data.len > 0:
+        try:
+          let tweet = fromFlatty(uncompress(data), Tweet)
+          if not tweet.isNil:
+            result.add(tweet)
+        except:
+          discard # Skip corrupted/missing data
+    # Sort by time descending (newest first)
+    result.sort((a, b) => cmp(b.time, a.time))
+
+proc setPinnedStatus*(tweets: seq[Tweet]) {.async.} =
+  # Batch check pin status for multiple tweets
+  for tweet in tweets:
+    if tweet != nil and tweet.id != 0:
+      tweet.pinned = await isPinned(tweet.id)
 
 proc isFollowing*(username: string): Future[bool] {.async.} =
   if username.len == 0: return false

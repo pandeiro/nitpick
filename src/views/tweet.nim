@@ -182,12 +182,18 @@ func formatStat(stat: int): string =
   if stat > 0: insertSep($stat, ',')
   else: ""
 
-proc renderStats(stats: TweetStats): VNode =
+proc renderStats(stats: TweetStats; tweetId: int64; isPinned: bool; path: string): VNode =
   buildHtml(tdiv(class="tweet-stats")):
     span(class="tweet-stat"): icon "comment", formatStat(stats.replies)
     span(class="tweet-stat"): icon "retweet", formatStat(stats.retweets)
     span(class="tweet-stat"): icon "heart", formatStat(stats.likes)
     span(class="tweet-stat"): icon "views", formatStat(stats.views)
+    span(class="tweet-stat"):
+      form(`method`="post", action=if isPinned: "/unpin" else: "/pin"):
+        hiddenField("tweetId", $tweetId)
+        hiddenField("referer", path)
+        button(`type`="submit", class=("pin-btn" & (if isPinned: " pinned" else: "")), title=if isPinned: "Unpin" else: "Pin"):
+          icon "pin"
 
 proc renderReply(tweet: Tweet): VNode =
   buildHtml(tdiv(class="replying-to")):
@@ -365,7 +371,7 @@ proc renderTweet*(tweet: Tweet; prefs: Prefs; path: string; class=""; index=0;
         renderMediaTags(tweet.mediaTags)
 
       if not prefs.hideTweetStats:
-        renderStats(tweet.stats)
+        renderStats(tweet.stats, tweet.id, pinned, path)
 
 proc renderTweetEmbed*(tweet: Tweet; path: string; prefs: Prefs; cfg: Config; req: Request): string =
   let node = buildHtml(html(lang="en")):

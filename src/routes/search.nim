@@ -4,7 +4,7 @@ import strutils, uri
 import jester
 
 import router_utils
-import ".."/[query, types, api, formatters]
+import ".."/[query, types, api, formatters, redis_cache]
 import ../views/[general, search]
 
 include "../views/opensearch.nimf"
@@ -37,6 +37,7 @@ proc createSearchRouter*(cfg: Config) =
         let
           tweets = await getGraphTweetSearch(query, getCursor())
           rss = if cfg.enableRSSSearch: "/search/rss?" & genQueryUrl(query) else: ""
+        await setPinnedStatus(tweets.content)
         resp renderMain(renderTweetSearch(tweets, prefs, getPath()),
                         request, cfg, prefs, title, rss=rss)
       else:

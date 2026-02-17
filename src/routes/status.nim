@@ -4,13 +4,25 @@ import asyncdispatch, strutils, sequtils, uri, options, sugar
 import jester, karax/vdom
 
 import router_utils
-import ".."/[types, formatters, api]
+import ".."/[types, formatters, api, redis_cache]
 import ../views/[general, status]
 
 export uri, sequtils, options, sugar
 export router_utils
-export api, formatters
+export api, formatters, redis_cache
 export status
+
+proc setPinStatus(conv: Conversation) {.async.} =
+  if conv.tweet != nil:
+    conv.tweet.pinned = await isPinned(conv.tweet.id)
+  for chain in [conv.before, conv.after]:
+    for tweet in chain.content:
+      if tweet != nil:
+        tweet.pinned = await isPinned(tweet.id)
+  for chain in conv.replies.content:
+    for tweet in chain.content:
+      if tweet != nil:
+        tweet.pinned = await isPinned(tweet.id)
 
 proc createStatusRouter*(cfg: Config) =
   router status:
@@ -37,6 +49,8 @@ proc createStatusRouter*(cfg: Config) =
         if conv != nil and conv.tweet != nil and conv.tweet.tombstone.len > 0:
           error = conv.tweet.tombstone
         resp Http404, showError(error, cfg)
+
+      await setPinStatus(conv)
 
       let
         title = pageTitle(conv.tweet)
