@@ -189,7 +189,7 @@ proc renderStats(stats: TweetStats; tweetId: int64; isPinned: bool; path: string
     span(class="tweet-stat"): icon "heart", formatStat(stats.likes)
     span(class="tweet-stat"): icon "views", formatStat(stats.views)
     span(class="tweet-stat"):
-      form(`method`="post", action=if isPinned: "/unpin" else: "/pin"):
+      form(`method`="post", action=if isPinned: "/unpin" else: "/pin", class="pin-form"):
         hiddenField("tweetId", $tweetId)
         hiddenField("referer", path)
         button(`type`="submit", class=("pin-btn" & (if isPinned: " pinned" else: "")), title=if isPinned: "Unpin" else: "Pin"):

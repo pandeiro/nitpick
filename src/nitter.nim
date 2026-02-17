@@ -58,7 +58,6 @@ createEmbedRouter(cfg)
 createRssRouter(cfg)
 createDebugRouter(cfg)
 createFollowRouter(cfg)
-createPinnedRouter(cfg)
 
 settings:
   port = Port(cfg.port)
@@ -71,6 +70,15 @@ routes:
     # skip all file URLs
     cond "." notin request.path
     applyUrlPrefs()
+
+  get "/pinned":
+    respPinned(cfg)
+
+  post "/pin":
+    respPin(cfg)
+
+  post "/unpin":
+    respUnpin(cfg)
 
   get "/":
     resp renderMain(renderSearch(), request, cfg, requestPrefs())

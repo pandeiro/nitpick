@@ -62,6 +62,11 @@ proc fetchProfile*(after: string; query: Query; skipRail=false): Future[Profile]
 
   result.tweets.query = query
   
+  # Cache all tweets in the timeline for faster access and pinning
+  if result.pinned.isSome:
+    await cache(result.pinned.get())
+  await cacheThreads(result.tweets.content)
+  
   # Check pin status for all tweets in the timeline
   await setPinnedStatus(result.tweets.content)
 
@@ -118,8 +123,9 @@ proc createTimelineRouter*(cfg: Config) =
       redirect("/" & username)
 
     get "/@name/?@tab?/?":
+      cond request.reqMethod == HttpGet
       cond '.' notin @"name"
-      cond @"name" notin ["pic", "gif", "video", "search", "settings", "login", "intent", "i", "following", "pinned"]
+      cond @"name" notin ["pic", "gif", "video", "search", "settings", "login", "intent", "i", "following", "pinned", "pin", "unpin"]
       cond @"name".allCharsInSet({'a'..'z', 'A'..'Z', '0'..'9', '_', ','})
       cond @"tab" in ["with_replies", "media", "search", ""]
       let

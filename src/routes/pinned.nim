@@ -9,38 +9,50 @@ import ../views/[general, pinned]
 
 export pinned
 
+template respPinned*(cfg: Config) =
+  let
+    prefs = requestPrefs()
+    pinnedTweets = await getPinnedTweets()
+    html = renderPinned(pinnedTweets, prefs, getPath())
+  resp renderMain(html, request, cfg, prefs, "Pinned Tweets")
+
+template respPin*(cfg: Config) =
+  let tweetIdStr = @"tweetId"
+  if tweetIdStr.len == 0:
+    resp Http400, showError("Missing tweet ID", cfg)
+  
+  try:
+    let tweetId = parseBiggestInt(tweetIdStr)
+    # Try fetching from cache first, then API
+    let tweet = await getCachedTweet(tweetId)
+    if tweet != nil and tweet.id != 0:
+      if tweet.user.username.len > 0:
+        await cacheUserId(tweet.user.username, tweet.user.id)
+        await cache(tweet.user)
+      discard await addPinnedTweet(tweet)
+  except:
+    discard # Fail gracefully
+  redirect("/pinned")
+
+template respUnpin*(cfg: Config) =
+  let tweetIdStr = @"tweetId"
+  if tweetIdStr.len == 0:
+    resp Http400, showError("Missing tweet ID", cfg)
+  
+  try:
+    let tweetId = parseBiggestInt(tweetIdStr)
+    discard await removePinnedTweet(tweetId)
+  except:
+    discard # Fail gracefully
+  redirect(refPath())
+
 proc createPinnedRouter*(cfg: Config) =
   router pinned:
     get "/pinned":
-      let
-        prefs = requestPrefs()
-        pinnedTweets = await getPinnedTweets()
-        html = renderPinned(pinnedTweets, prefs, getPath())
-      resp renderMain(html, request, cfg, prefs, "Pinned Tweets")
+      respPinned(cfg)
 
     post "/pin":
-      let tweetIdStr = @"tweetId"
-      if tweetIdStr.len == 0:
-        resp Http400, showError("Missing tweet ID", cfg)
-      
-      try:
-        let tweetId = parseBiggestInt(tweetIdStr)
-        # Fetch tweet data to store with pin
-        let tweet = await getGraphTweetResult($tweetId)
-        if tweet != nil and tweet.id != 0:
-          discard await addPinnedTweet(tweet)
-      except:
-        discard # Fail gracefully
-      redirect(refPath())
+      respPin(cfg)
 
     post "/unpin":
-      let tweetIdStr = @"tweetId"
-      if tweetIdStr.len == 0:
-        resp Http400, showError("Missing tweet ID", cfg)
-      
-      try:
-        let tweetId = parseBiggestInt(tweetIdStr)
-        discard await removePinnedTweet(tweetId)
-      except:
-        discard # Fail gracefully
-      redirect(refPath())
+      respUnpin(cfg)

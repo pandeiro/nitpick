@@ -90,7 +90,7 @@ class BaseTestCase(BaseCase):
         super(BaseTestCase, self).tearDown()
 
     def open_nitter(self, page=''):
-        self.open(f'http://localhost:8080/{page}')
+        self.open(f'http://localhost:7000/{page}')
 
     def search_username(self, username):
         self.open_nitter()
@@ -99,4 +99,5 @@ class BaseTestCase(BaseCase):
 
 
 def get_timeline_tweet(num=1):
-    return Tweet(f'.timeline > div:nth-child({num}) ')
+    # Support both standard timeline and our new pinned gallery
+    return Tweet(f'div:is(.timeline, .pinned-gallery) > div:nth-child({num}) ')

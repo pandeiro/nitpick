@@ -76,7 +76,7 @@ proc setEx(key: string; time: int; data: string) {.async.} =
   pool.withAcquire(r):
     dawait r.setEx(key, time, data)
 
-proc cacheUserId(username, id: string) {.async.} =
+proc cacheUserId*(username, id: string) {.async.} =
   if username.len == 0 or id.len == 0: return
   let name = toLower(username)
   pool.withAcquire(r):
@@ -97,8 +97,15 @@ proc cache*(data: User) {.async.} =
 
 proc cache*(data: Tweet) {.async.} =
   if data.isNil or data.id == 0: return
-  pool.withAcquire(r):
-    dawait r.setEx(data.id.tweetKey, baseCacheTime, compress(toFlatty(data)))
+  await setEx(data.id.tweetKey, baseCacheTime, compress(toFlatty(data)))
+
+proc cache*(tweets: seq[Tweet]) {.async.} =
+  for tweet in tweets:
+    await cache(tweet)
+
+proc cacheThreads*(threads: seq[seq[Tweet]]) {.async.} =
+  for thread in threads:
+    await cache(thread)
 
 proc cacheRss*(query: string; rss: Rss) {.async.} =
   let key = "rss:" & query
@@ -148,15 +155,15 @@ proc getCachedUsername*(userId: string): Future[string] {.async.} =
     if result.len > 0 and user.id.len > 0:
       await all(cacheUserId(result, user.id), cache(user))
 
-# proc getCachedTweet*(id: int64): Future[Tweet] {.async.} =
-#   if id == 0: return
-#   let tweet = await get(id.tweetKey)
-#   if tweet != redisNil:
-#     tweet.deserialize(Tweet)
-#   else:
-#     result = await getGraphTweetResult($id)
-#     if not result.isNil:
-#       await cache(result)
+proc getCachedTweet*(id: int64; fetch=true): Future[Tweet] {.async.} =
+  if id == 0: return
+  let tweet = await get(id.tweetKey)
+  if tweet != redisNil:
+    tweet.deserialize(Tweet)
+  elif fetch:
+    result = await getGraphTweetResult($id)
+    if not result.isNil:
+      await cache(result)
 
 proc getCachedPhotoRail*(id: string): Future[PhotoRail] {.async.} =
   if id.len == 0: return
@@ -242,7 +249,7 @@ proc setPinnedStatus*(tweets: seq[Tweet]) {.async.} =
     if tweet != nil and tweet.id != 0:
       tweet.pinned = await isPinned(tweet.id)
 
-proc setPinnedStatus*(threads: seq[Tweets]) {.async.} =
+proc setPinnedStatus*(threads: seq[seq[Tweet]]) {.async.} =
   for thread in threads:
     await setPinnedStatus(thread)
 
