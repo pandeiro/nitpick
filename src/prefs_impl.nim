@@ -110,6 +110,15 @@ genPrefs:
       "Reddit -> Teddit/Libreddit"
       placeholder: "Teddit hostname"
 
+  Feed:
+    feedStrategy(select, "Sampling"):
+      "Multi-user Feed Strategy"
+      options: ["Sampling", "Sequential"]
+
+    rankingAlgorithm(select, "Chronological"):
+      "Ranking Algorithm"
+      options: ["Chronological"]
+
 iterator allPrefs*(): Pref =
   for k, v in prefList:
     for pref in v:
