@@ -9,6 +9,23 @@ Attempts to add custom features to Nitter:
 - chronological feed
 - etc (roadmap to come)
 
+### Development (Docker based flow)
+
+In lieu of local Nim/Redis configuration, use the provided Docker environment for all development and testing.
+
+```bash
+make dev          # Start Nitpick and Redis in the background
+make build        # Rebuild the development container
+make test         # Run integration tests (Headless - won't steal focus)
+make test-headed  # Run integration tests with a visible browser window
+make logs         # Follow application logs
+make down         # Stop the development environment
+```
+
+The Docker environment automatically handles dependency installation, SCSS compilation, and configuration setup (`nitter.conf`).
+
+By default it exposes Nitpick on `http://localhost:7000`.
+
 ---
 
 ## Original Nitter Docs
@@ -118,30 +135,6 @@ $ nimble scss
 $ nimble md
 $ cp nitter.example.conf nitter.conf
 ```
-
-### Docker (Recommended for Development)
-
-Because local Nim/Redis configurations can be fragile, it is highly recommended to use the provided Docker environment for all development and testing.
-
-```bash
-make dev          # Start Nitpick and Redis in the background
-make build        # Rebuild the development container
-make test         # Run integration tests (Headless - won't steal focus)
-make test-headed  # Run integration tests with a visible browser window
-make logs         # Follow application logs
-make down         # Stop the development environment
-```
-
-The Docker environment automatically handles dependency installation, SCSS compilation, and configuration setup (`nitter.conf`). It exposes Nitpick on `http://localhost:7000`.
-
-Set your hostname, port, HMAC key, https (must be correct for cookies), and
-Redis info in `nitter.conf`. To run Redis, either run
-`redis-server --daemonize yes`, or `systemctl enable --now redis` (or
-redis-server depending on the distro). Run Nitter by executing `./nitter` or
-using the systemd service below. You should run Nitter behind a reverse proxy
-such as [Nginx](https://github.com/zedeus/nitter/wiki/Nginx) or
-[Apache](https://github.com/zedeus/nitter/wiki/Apache) for security and
-performance reasons.
 
 ### Docker
 
