@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: nitpick-dev
     ports:
-      - "8080:8080"
+      - "7000:8080"
     volumes:
       - .:/src:Z
     depends_on:
