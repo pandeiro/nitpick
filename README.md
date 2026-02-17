@@ -4,7 +4,10 @@
 
 ## Rationale
 
-Attempts to add custom features to Nitter such as follow lists, chronological feeds, etc.
+Attempts to add custom features to Nitter:
+- follow lists
+- chronological feed
+- etc (roadmap to come)
 
 ---
 
