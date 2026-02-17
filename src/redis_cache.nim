@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import asyncdispatch, times, strformat, strutils, tables, hashes
+import asyncdispatch, times, strformat, strutils, tables, hashes, algorithm, sugar
 import redis, redpool, flatty, supersnappy
 
 import types, api
@@ -205,7 +205,7 @@ proc isPinned*(tweetId: int64): Future[bool] {.async.} =
   pool.withAcquire(r):
     result = await r.sIsMember(pinnedIdsKey(), $tweetId)
 
-proc pinTweet*(tweet: Tweet): Future[bool] {.async.} =
+proc addPinnedTweet*(tweet: Tweet): Future[bool] {.async.} =
   if tweet.isNil or tweet.id == 0: return false
   let tweetId = $tweet.id
   pool.withAcquire(r):
@@ -215,7 +215,7 @@ proc pinTweet*(tweet: Tweet): Future[bool] {.async.} =
     await setKey(pinnedTweetKey(tweet.id), compress(toFlatty(tweet)))
     result = true
 
-proc unpinTweet*(tweetId: int64): Future[bool] {.async.} =
+proc removePinnedTweet*(tweetId: int64): Future[bool] {.async.} =
   pool.withAcquire(r):
     # Remove from pinned IDs set
     discard await r.sRem(pinnedIdsKey(), $tweetId)
@@ -229,7 +229,7 @@ proc getPinnedTweets*(): Future[seq[Tweet]] {.async.} =
     result = @[]
     for id in ids:
       if id.len == 0: continue
-      let data = await r.get(pinnedTweetKey(parseInt(id)))
+      let data = await r.get(pinnedTweetKey(parseBiggestInt(id)))
       if data != redisNil and data.len > 0:
         try:
           let tweet = fromFlatty(uncompress(data), Tweet)

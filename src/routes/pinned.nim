@@ -28,7 +28,7 @@ proc createPinnedRouter*(cfg: Config) =
         # Fetch tweet data to store with pin
         let tweet = await getGraphTweetResult($tweetId)
         if tweet != nil and tweet.id != 0:
-          discard await pinTweet(tweet)
+          discard await addPinnedTweet(tweet)
       except:
         discard # Fail gracefully
       redirect(refPath())
@@ -40,7 +40,7 @@ proc createPinnedRouter*(cfg: Config) =
       
       try:
         let tweetId = parseBiggestInt(tweetIdStr)
-        discard await unpinTweet(tweetId)
+        discard await removePinnedTweet(tweetId)
       except:
         discard # Fail gracefully
       redirect(refPath())
