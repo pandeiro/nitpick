@@ -8,6 +8,7 @@
 
 ## Data & Caching
 - **Primary Store:** Redis (Valkey recommended for open-source compliance)
+- **Schema:** Pinned tweets are stored as a JSON-serialized set under the `nitpick:pinned_tweets` key.
 - **Redis Client:** `redpool` and a custom `redis` fork (`zedeus/redis`)
 
 ## Key Libraries & Utilities
@@ -26,3 +27,4 @@
 
 ## Testing
 - **Integration Tests:** Python-based test suite (using `requests` and `pytest` patterns)
+- **Testing Frameworks:** `seleniumbase` for frontend and flow verification.
