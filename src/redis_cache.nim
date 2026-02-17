@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import asyncdispatch, times, strformat, strutils, tables, hashes, algorithm, sugar
+import asyncdispatch, times, strformat, strutils, tables, hashes, algorithm
 import redis, redpool, flatty, supersnappy
 
 import types, api
@@ -75,10 +75,6 @@ proc get(query: string): Future[string] {.async.} =
 proc setEx(key: string; time: int; data: string) {.async.} =
   pool.withAcquire(r):
     dawait r.setEx(key, time, data)
-
-proc setKey(key: string; data: string) {.async.} =
-  pool.withAcquire(r):
-    dawait r.setk(key, data)
 
 proc cacheUserId(username, id: string) {.async.} =
   if username.len == 0 or id.len == 0: return
@@ -212,7 +208,7 @@ proc addPinnedTweet*(tweet: Tweet): Future[bool] {.async.} =
     # Add to pinned IDs set (idempotent)
     discard await r.sAdd(pinnedIdsKey(), tweetId)
     # Store serialized tweet data without expiry (persistent until unpinned)
-    await setKey(pinnedTweetKey(tweet.id), compress(toFlatty(tweet)))
+    await r.setk(pinnedTweetKey(tweet.id), compress(toFlatty(tweet)))
     result = true
 
 proc removePinnedTweet*(tweetId: int64): Future[bool] {.async.} =
@@ -238,7 +234,7 @@ proc getPinnedTweets*(): Future[seq[Tweet]] {.async.} =
         except:
           discard # Skip corrupted/missing data
     # Sort by time descending (newest first)
-    result.sort((a, b) => cmp(b.time, a.time))
+    result.sort(proc (a, b: Tweet): int = cmp(b.time, a.time))
 
 proc setPinnedStatus*(tweets: seq[Tweet]) {.async.} =
   # Batch check pin status for multiple tweets
