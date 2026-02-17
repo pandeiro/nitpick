@@ -225,12 +225,20 @@
   font-size: 14px;
   display: inline-flex;
   align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+
+  .timeline-item:hover & {
+    opacity: 0.6;
+  }
 
   &.pinned {
+    opacity: 1;
     color: var(--accent);
   }
 
   &:hover {
+    opacity: 1 !important;
     color: var(--accent);
   }
 }
