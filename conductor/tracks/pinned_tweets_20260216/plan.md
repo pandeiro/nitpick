@@ -1,10 +1,10 @@
 # Implementation Plan: Pinned Tweets
 
 ## Phase 1: Backend & Data Layer
-- [ ] Task: Define Redis storage schema and helper functions for pinned tweets.
-    - [ ] Create `src/routes/pinned.nim` for pinning logic.
-    - [ ] Implement `addPinnedTweet` and `removePinnedTweet` in a new or existing utility file.
-    - [ ] Write integration tests for pinning/unpinning logic using Python.
+- [x] Task: Define Redis storage schema and helper functions for pinned tweets. (6fdc0fa)
+    - [x] Create `src/routes/pinned.nim` for pinning logic.
+    - [x] Implement `addPinnedTweet` and `removePinnedTweet` in a new or existing utility file.
+    - [x] Write integration tests for pinning/unpinning logic using Python.
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Backend & Data Layer' (Protocol in workflow.md)
 
 ## Phase 2: Frontend Implementation
