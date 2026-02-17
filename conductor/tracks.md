@@ -4,5 +4,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [ ] **Track: Implement "Pinned Tweets" personal archive**
+- [~] **Track: Implement "Pinned Tweets" personal archive**
   *Link: [./tracks/pinned_tweets_20260216/](./tracks/pinned_tweets_20260216/)*

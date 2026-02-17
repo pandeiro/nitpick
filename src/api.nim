@@ -68,6 +68,7 @@ proc getGraphUserById*(id: string): Future[User] {.async.} =
 
 proc getGraphUserTweets*(id: string; kind: TimelineKind; after=""): Future[Profile] {.async.} =
   if id.len == 0: return
+  echo "Fetching timeline for user ID: ", id, " kind: ", kind
   let
     cursor = if after.len > 0: "\"cursor\":\"$1\"," % after else: ""
     url = case kind

@@ -205,6 +205,9 @@
 .tweet-stats {
   margin-bottom: -3px;
   -webkit-user-select: none;
+  pointer-events: all;
+  position: relative;
+  z-index: 3;
 }
 
 .tweet-stat {
