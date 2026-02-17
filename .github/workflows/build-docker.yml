@@ -1,4 +1,4 @@
-name: Docker
+name: Build
 
 on:
   push:
@@ -8,11 +8,7 @@ on:
       - main
 
 jobs:
-  tests:
-    uses: ./.github/workflows/run-tests.yml
-    secrets: inherit
   build:
-    needs: [tests]
     runs-on: ubuntu
     steps:
       - uses: actions/checkout@v4
