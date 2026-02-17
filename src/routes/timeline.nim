@@ -78,7 +78,9 @@ proc showTimeline*(request: Request; query: Query; cfg: Config; prefs: Prefs;
 
   if profile.user.id.len == 0: return
 
-  let pHtml = renderProfile(profile, prefs, getPath())
+  let
+    isFollowing = await isFollowing(u.username)
+    pHtml = renderProfile(profile, prefs, getPath(), isFollowing)
   result = renderMain(pHtml, request, cfg, prefs, pageTitle(u), pageDesc(u),
                       rss=rss, images = @[u.getUserPic("_400x400")],
                       banner=u.banner)

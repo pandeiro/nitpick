@@ -12,7 +12,18 @@ proc renderStat(num: int; class: string; text=""): VNode =
     span(class="profile-stat-num"):
       text insertSep($num, ',')
 
-proc renderUserCard*(user: User; prefs: Prefs): VNode =
+proc renderFollowButton*(username: string; isFollowing: bool; prefs: Prefs): VNode =
+  let
+    action = if isFollowing: "/unfollow" else: "/follow"
+    btnClass = if isFollowing: "follow-btn following" else: "follow-btn"
+    btnText = if isFollowing: "Following" else: "Follow"
+  buildHtml(form(`method`="post", action=action, class="follow-form")):
+    hiddenField("username", username)
+    hiddenField("referer", "/" & username)
+    button(`type`="submit", class=btnClass):
+      text btnText
+
+proc renderUserCard*(user: User; prefs: Prefs; isFollowing: bool): VNode =
   buildHtml(tdiv(class="profile-card")):
     tdiv(class="profile-card-info"):
       let
@@ -64,6 +75,8 @@ proc renderUserCard*(user: User; prefs: Prefs): VNode =
           renderStat(user.followers, "followers")
           renderStat(user.likes, "likes")
 
+        renderFollowButton(user.username, isFollowing, prefs)
+
 proc renderPhotoRail(profile: Profile): VNode =
   let count = insertSep($profile.user.media, ',')
   buildHtml(tdiv(class="photo-rail-card")):
@@ -100,7 +113,7 @@ proc renderProtected(username: string): VNode =
       h2: text "This account's tweets are protected."
       p: text &"Only confirmed followers have access to @{username}'s tweets."
 
-proc renderProfile*(profile: var Profile; prefs: Prefs; path: string): VNode =
+proc renderProfile*(profile: var Profile; prefs: Prefs; path: string; isFollowing: bool): VNode =
   profile.tweets.query.fromUser = @[profile.user.username]
 
   buildHtml(tdiv(class="profile-tabs")):
@@ -110,7 +123,7 @@ proc renderProfile*(profile: var Profile; prefs: Prefs; path: string): VNode =
 
     let sticky = if prefs.stickyProfile: " sticky" else: ""
     tdiv(class=("profile-tab" & sticky)):
-      renderUserCard(profile.user, prefs)
+      renderUserCard(profile.user, prefs, isFollowing)
       if profile.photoRail.len > 0:
         renderPhotoRail(profile)
 

@@ -192,3 +192,31 @@ proc getCachedRss*(key: string): Future[Rss] {.async.} =
           except: echo "Decompressing RSS failed: ", feed
     else:
       result.cursor.setLen 0
+
+template followingKey(): string = "following:global"
+
+proc isFollowing*(username: string): Future[bool] {.async.} =
+  if username.len == 0: return false
+  let name = toLower(username)
+  pool.withAcquire(r):
+    result = await r.sIsMember(followingKey(), name)
+
+proc followUser*(username: string): Future[bool] {.async.} =
+  if username.len == 0: return false
+  let name = toLower(username)
+  pool.withAcquire(r):
+    result = (await r.sAdd(followingKey(), name)) == 1
+
+proc unfollowUser*(username: string): Future[bool] {.async.} =
+  if username.len == 0: return false
+  let name = toLower(username)
+  pool.withAcquire(r):
+    result = (await r.sRem(followingKey(), name)) == 1
+
+proc getFollowingList*(): Future[seq[string]] {.async.} =
+  pool.withAcquire(r):
+    let members = await r.sMembers(followingKey())
+    result = @[]
+    for m in members:
+      if m.len > 0:
+        result.add(m)
