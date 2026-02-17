@@ -17,9 +17,9 @@
     - [x] Add SCSS for the modernized gallery view.
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Frontend Implementation' (Protocol in workflow.md) (df6ca05)
 
-## Phase 3: Polish & Verification
-- [ ] Task: Final UI/UX review against Product Guidelines.
-    - [ ] Verify monochrome/high-contrast adherence.
-    - [ ] Ensure gestural/subtle interactions for pinning.
-- [ ] Task: Run full test suite to ensure no regressions.
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Polish & Verification' (Protocol in workflow.md)
+## Phase 3: Polish & Verification [checkpoint: ea4a211]
+- [x] Task: Final UI/UX review against Product Guidelines. (1a25066)
+    - [x] Verify monochrome/high-contrast adherence.
+    - [x] Ensure gestural/subtle interactions for pinning.
+- [x] Task: Run full test suite to ensure no regressions. (1a25066)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Polish & Verification' (Protocol in workflow.md) (ea4a211)
