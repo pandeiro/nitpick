@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import asyncdispatch, random, algorithm, options, logging
+import asyncdispatch, random, algorithm, options, logging, strutils
 import types, api, redis_cache
 
 randomize()
@@ -38,7 +38,7 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
       sampled.setLen(15)
     
     info "[feed] Sampling strategy: ", strategy, " (", sampled.len, " users sampled)"
-    debug "[feed] Sampled users: ", sampled
+    debug "[feed] Sampled users: ", sampled.join(", ")
   else:
     # Use existing sample for valid pagination
     if feedData.isSome:
