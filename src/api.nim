@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import asyncdispatch, httpclient, strutils, sequtils, sugar
+import asyncdispatch, httpclient, strutils, sequtils, sugar, logging
 import packedjson
 import types, query, formatters, consts, apiutils, parser
 import experimental/parser as newParser
@@ -68,7 +68,7 @@ proc getGraphUserById*(id: string): Future[User] {.async.} =
 
 proc getGraphUserTweets*(id: string; kind: TimelineKind; after=""): Future[Profile] {.async.} =
   if id.len == 0: return
-  echo "Fetching timeline for user ID: ", id, " kind: ", kind
+  info "[api] Fetching profile timeline for ID: ", id, " kind: ", kind
   let
     cursor = if after.len > 0: "\"cursor\":\"$1\"," % after else: ""
     url = case kind
@@ -125,6 +125,7 @@ proc getGraphTweetResult*(id: string): Future[Tweet] {.async.} =
 
 proc getGraphTweet(id: string; after=""): Future[Conversation] {.async.} =
   if id.len == 0: return
+  info "[api] Fetching tweet detail (conversation) for ID: ", id, (if after.len > 0: " cursor: " & after else: "")
   let
     cursor = if after.len > 0: "\"cursor\":\"$1\"," % after else: ""
     js = await fetch(tweetDetailUrl(id, cursor))
@@ -151,6 +152,7 @@ proc getGraphTweetSearch*(query: Query; after=""): Future[Timeline] {.async.} =
   if q.len == 0 or q == emptyQuery:
     return Timeline(query: query, beginning: true)
 
+  info "[api] Executing Twitter GraphQL Search query: ", q
   var
     variables = %*{
       "rawQuery": q,

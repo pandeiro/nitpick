@@ -23,10 +23,15 @@ let
 
 initSessionPool(cfg, sessionsPath)
 
-if not cfg.enableDebug:
-  # Silence Jester's query warning
-  addHandler(newConsoleLogger())
-  setLogFilter(lvlError)
+# Configure structured logging
+let logger = newConsoleLogger(fmtStr = "[$time] $levelid: ")
+addHandler(logger)
+
+if cfg.enableDebug:
+  setLogFilter(lvlAll)
+else:
+  # Show info logs by default for better visibility of feed actions
+  setLogFilter(lvlInfo)
 
 stdout.write &"Starting Nitter at {getUrlPrefix(cfg)}\n"
 stdout.flushFile

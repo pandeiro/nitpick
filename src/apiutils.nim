@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import httpclient, asyncdispatch, options, strutils, uri, times, math, tables
+import httpclient, asyncdispatch, options, strutils, uri, times, math, tables, logging
 import jsony, packedjson, zippy, oauth1
 import types, auth, consts, parserutils, http_pool, tid
 import experimental/types/common
@@ -91,11 +91,11 @@ proc getAndValidateSession*(req: ApiReq): Future[Session] {.async.} =
   case result.kind
   of SessionKind.oauth:
     if result.oauthToken.len == 0:
-      echo "[sessions] Empty oauth token, session: ", result.pretty
+      error "[sessions] Empty oauth token, session: ", result.pretty
       raise rateLimitError()
   of SessionKind.cookie:
     if result.authToken.len == 0 or result.ct0.len == 0:
-      echo "[sessions] Empty cookie credentials, session: ", result.pretty
+      error "[sessions] Empty cookie credentials, session: ", result.pretty
       raise rateLimitError()
 
 template fetchImpl(result, fetchBody) {.dirty.} =
@@ -133,7 +133,7 @@ template fetchImpl(result, fetchBody) {.dirty.} =
       if result.startsWith("{\"errors"):
         let errors = result.fromJson(Errors)
         if errors notin errorsToSkip:
-          echo "Fetch error, API: ", url.path, ", errors: ", errors
+          error "Fetch error, API: ", url.path, ", errors: ", errors
           if errors in {expiredToken, badToken, locked}:
             invalidate(session)
             raise rateLimitError()
@@ -142,13 +142,13 @@ template fetchImpl(result, fetchBody) {.dirty.} =
             setLimited(session, req)
             raise rateLimitError()
       elif result.startsWith("429 Too Many Requests"):
-        echo "[sessions] 429 error, API: ", url.path, ", session: ", session.pretty
+        error "[sessions] 429 error, API: ", url.path, ", session: ", session.pretty
         raise rateLimitError()
 
     fetchBody
 
     if resp.status == $Http400:
-      echo "ERROR 400, ", url.path, ": ", result
+      error "ERROR 400, ", url.path, ": ", result
       raise newException(InternalError, $url)
   except InternalError as e:
     raise e
@@ -158,7 +158,7 @@ template fetchImpl(result, fetchBody) {.dirty.} =
     raise e
   except Exception as e:
     let s = session.pretty
-    echo "error: ", e.name, ", msg: ", e.msg, ", session: ", s, ", url: ", url
+    error "error: ", e.name, ", msg: ", e.msg, ", session: ", s, ", url: ", url
     raise rateLimitError()
   finally:
     release(session)
@@ -167,7 +167,7 @@ template retry(bod) =
   try:
     bod
   except RateLimitError:
-    echo "[sessions] Rate limited, retrying ", req.cookie.endpoint, " request..."
+    warn "[sessions] Rate limited, retrying ", req.cookie.endpoint, " request..."
     bod
 
 proc fetch*(req: ApiReq): Future[JsonNode] {.async.} =

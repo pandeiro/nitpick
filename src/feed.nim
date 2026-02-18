@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import asyncdispatch, random, algorithm, options
+import asyncdispatch, random, algorithm, options, logging
 import types, api, redis_cache
 
 randomize()
@@ -13,7 +13,13 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
   ## 3. Merges and de-duplicates results into a persistent Redis-backed global feed.
   ## 4. For pagination (load more), uses the same sampled users to maintain cursor consistency.
   if following.len == 0:
+    info "[feed] Global feed requested but following list is empty."
     return Timeline()
+
+  if cursor.len == 0:
+    info "[feed] Initializing new global feed fetch (initial load)."
+  else:
+    info "[feed] Pagination request for global feed with cursor: ", cursor
 
   # 1. Load latest feed metadata
   let feedData = await getGlobalFeed()
@@ -30,12 +36,17 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
       sampled.setLen(15)
     elif strategy == "Sequential" and sampled.len > 15:
       sampled.setLen(15)
+    
+    info "[feed] Sampling strategy: ", strategy, " (", sampled.len, " users sampled)"
+    debug "[feed] Sampled users: ", sampled
   else:
     # Use existing sample for valid pagination
     if feedData.isSome:
       sampled = feedData.get().sampledUsers
+      info "[feed] Continuing pagination with ", sampled.len, " users from cached metadata."
     else:
       # Fallback (shouldn't happen with valid cursor)
+      warn "[feed] Cursor present but no cached metadata found. Falling back to new sample."
       sampled = following
       if sampled.len > 15: sampled.setLen(15)
 
@@ -52,9 +63,12 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
   if prefs.hideRetweets:
     excludes.add "nativeretweets"
   
+  info "[feed] Fetching tweets from Twitter search..."
   let 
     q = Query(text: queryStr, kind: tweets, excludes: excludes)
     searchResult = await getGraphTweetSearch(q, useCursor)
+  
+  info "[feed] Fetched ", searchResult.content.len, " thread(s) from Twitter API."
   
   # 5. Accumulate results
   var allTweets: seq[Tweet] = @[]
@@ -75,6 +89,8 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
     # Resolve the latest 50 tweet IDs into objects
     var latestIds = f.tweetIds
     if latestIds.len > 50: latestIds.setLen(50)
+    
+    info "[feed] Resolving ", latestIds.len, " tweet IDs from cache to build final timeline."
     let tweets = await getCachedTweets(latestIds)
     
     # Wrap tweets into threads for Timeline compatibility
@@ -82,6 +98,7 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
     for t in tweets:
       threads.add @[t]
       
+    info "[feed] Feed generation complete. ", f.tweetIds.len, " total tweets in global cache."
     result = Timeline(
       content: threads,
       beginning: useCursor.len == 0,
@@ -93,6 +110,7 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
       lastUpdated: f.lastUpdated
     )
   else:
+    error "[feed] Fatal error: Global feed cache disappeared during processing."
     # Fallback to current search result if cache failed
     result = searchResult
     result.beginning = useCursor.len == 0
