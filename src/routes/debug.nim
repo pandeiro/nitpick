@@ -20,3 +20,8 @@ proc createDebugRouter*(cfg: Config) =
       cond cfg.enableDebug
       await clearGlobalFeed()
       resp "Feed cleared"
+
+    get "/.following/clear":
+      cond cfg.enableDebug
+      await clearFollowingList()
+      resp "Following cleared"

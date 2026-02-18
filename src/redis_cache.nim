@@ -338,3 +338,7 @@ proc getGlobalFeedDebug*(): Future[JsonNode] {.async.} =
 proc clearGlobalFeed*() {.async.} =
   pool.withAcquire(r):
     discard await r.del(globalFeedKey())
+
+proc clearFollowingList*() {.async.} =
+  pool.withAcquire(r):
+    discard await r.del(followingKey())

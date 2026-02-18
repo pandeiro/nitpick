@@ -56,3 +56,27 @@ class TestFeedUI(BaseTestCase):
         # The test passes if no error occurs during scrolling
         # and the page still has tweets
         self.assert_element(".timeline")
+
+    def test_feed_visibility_on_home(self):
+        """
+        Verifies that the feed is visible on the Home Page if users are followed.
+        """
+        # 1. Unfollow everyone (clear state)
+        self.open_nitter(".feed/clear")
+        self.open_nitter(".following/clear")
+        
+        # 2. Go to home page - should see search bar
+        self.open_nitter()
+        self.assert_element(".search-bar")
+        self.assert_element_absent(".timeline")
+        
+        # 3. Follow a user
+        self.open_nitter("jack")
+        if self.is_element_visible(".follow-btn"):
+            self.click(".follow-btn")
+            
+        # 4. Go to home page - should see feed
+        self.open_nitter()
+        self.assert_element(".timeline")
+        self.assert_element(".feed-header")
+        self.assert_element_absent(".panel-container .search-bar")
