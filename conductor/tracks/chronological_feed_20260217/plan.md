@@ -12,15 +12,15 @@ Implement a chronological feed of followed users on the Home Page (/) with a "Sa
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Data Layer & Preferences' (Protocol in workflow.md)
 
 ## Phase 2: Feed Logic & Routing [ ]
-- [ ] Task: Implement `fetchGlobalFeed` in `src/api.nim` (or a new `src/feed.nim`).
-    - [ ] Logic for randomly sampling ~15 followed users.
-    - [ ] Constructing the OR-joined search query.
-    - [ ] Fetching and returning the timeline results.
-- [ ] Task: Update the Home Page route (`/`) in `src/nitter.nim` (or relevant router).
-    - [ ] Redirect to feed if the user follows >0 people.
-    - [ ] Call `fetchGlobalFeed` and handle accumulation logic on refresh.
-- [ ] Task: Write integration tests for feed fetching and sampling in `tests/test_feed_logic.py`.
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Feed Logic & Routing' (Protocol in workflow.md)
+- [x] Task: Implement `fetchGlobalFeed` in `src/api.nim` (or a new `src/feed.nim`). (b6c0be6)
+    - [x] Logic for randomly sampling ~15 followed users.
+    - [x] Constructing the OR-joined search query.
+    - [x] Fetching and returning the timeline results.
+- [x] Task: Update the Home Page route (`/`) in `src/nitter.nim` (or relevant router). (b6c0be6)
+    - [x] Redirect to feed if the user follows >0 people.
+    - [x] Call `fetchGlobalFeed` and handle accumulation logic on refresh.
+- [x] Task: Write integration tests for feed fetching and sampling in `tests/test_feed_logic.py`. (b6c0be6)
+- [~] Task: Conductor - User Manual Verification 'Phase 2: Feed Logic & Routing' (Protocol in workflow.md)
 
 ## Phase 3: Frontend & Interaction [ ]
 - [ ] Task: Add a 'Following' icon link to the global navbar in `src/views/general.nim` routing to `/following`.
