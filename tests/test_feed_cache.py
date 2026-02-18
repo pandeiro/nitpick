@@ -24,8 +24,9 @@ class TestFeedCache(BaseTestCase):
         """
         Verifies that the global feed accumulates data correctly using the debug endpoint.
         """
-        # 1. Clear the global feed
+        # 1. Clear state
         self.open_nitter(".feed/clear")
+        self.open_nitter(".following/clear")
         self.open_nitter(".feed")
         assert self.get_text("body") == "{}"
 

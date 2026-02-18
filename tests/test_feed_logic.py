@@ -6,8 +6,9 @@ class TestFeedLogic(BaseTestCase):
         """
         Verifies that fetchGlobalFeed correctly samples users and returns tweets.
         """
-        # 1. Clear feed
+        # 1. Clear state
         self.open_nitter(".feed/clear")
+        self.open_nitter(".following/clear")
 
         # 2. Follow multiple users
         users = ["jack", "elonmusk", "nim_lang"]
