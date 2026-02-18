@@ -37,3 +37,6 @@ Implement a chronological feed of followed users on the Home Page (/) with a "Sa
 - [x] Task: Final UI/UX review for "functional minimalism". (87ecba0)
 - [x] Task: Synchronize `conductor/product.md` and `conductor/tech-stack.md` with the new feed features.
 - [x] Task: Conductor - User Manual Verification 'Phase 4: Final Polish & Documentation' (Protocol in workflow.md) (87ecba0)
+
+## Phase: Review Fixes
+- [x] Task: Apply review suggestions 12ef0df
