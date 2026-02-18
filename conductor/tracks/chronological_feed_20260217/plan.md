@@ -27,11 +27,11 @@ Implement a chronological feed of followed users on the Home Page (/) with a "Sa
 - [x] Task: Update `src/views/timeline.nim` to include a `renderFeedHeader` with statistics (X/Y users, last update). (fc9e0e4)
 - [x] Task: Ensure the feed respects the `infiniteScroll` preference in `src/views/timeline.nim` and `src/routes/timeline.nim`. (e2aed00)
 - [x] Task: Refine feed styling in `src/sass/timeline.scss` to ensure high-contrast/monochrome adherence. (23441b4)
-- [ ] Task: Write SeleniumBase tests in `tests/test_feed_ui.py` to verify:
-    - [ ] Feed visibility on Home Page.
-    - [ ] Statistics display.
-    - [ ] Pagination/Infinite Scroll behavior.
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Frontend & Interaction' (Protocol in workflow.md)
+- [x] Task: Write SeleniumBase tests in `tests/test_feed_ui.py` to verify: (92d5edf)
+    - [x] Feed visibility on Home Page.
+    - [x] Statistics display.
+    - [x] Pagination/Infinite Scroll behavior.
+- [~] Task: Conductor - User Manual Verification 'Phase 3: Frontend & Interaction' (Protocol in workflow.md)
 
 ## Phase 4: Final Polish & Documentation [ ]
 - [ ] Task: Final UI/UX review for "functional minimalism".
