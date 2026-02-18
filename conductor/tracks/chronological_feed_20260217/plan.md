@@ -33,7 +33,7 @@ Implement a chronological feed of followed users on the Home Page (/) with a "Sa
     - [x] Pagination/Infinite Scroll behavior.
 - [~] Task: Conductor - User Manual Verification 'Phase 3: Frontend & Interaction' (Protocol in workflow.md)
 
-## Phase 4: Final Polish & Documentation [ ]
-- [ ] Task: Final UI/UX review for "functional minimalism".
-- [ ] Task: Synchronize `conductor/product.md` and `conductor/tech-stack.md` with the new feed features.
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Final Polish & Documentation' (Protocol in workflow.md)
+## Phase 4: Final Polish & Documentation [x] [checkpoint: a960cde]
+- [x] Task: Final UI/UX review for "functional minimalism".
+- [x] Task: Synchronize `conductor/product.md` and `conductor/tech-stack.md` with the new feed features.
+- [~] Task: Conductor - User Manual Verification 'Phase 4: Final Polish & Documentation' (Protocol in workflow.md)
