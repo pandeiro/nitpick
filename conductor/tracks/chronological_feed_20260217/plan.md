@@ -22,7 +22,7 @@ Implement a chronological feed of followed users on the Home Page (/) with a "Sa
 - [x] Task: Write integration tests for feed fetching and sampling in `tests/test_feed_logic.py`. (b6c0be6)
 - [~] Task: Conductor - User Manual Verification 'Phase 2: Feed Logic & Routing' (Protocol in workflow.md)
 
-## Phase 3: Frontend & Interaction [ ]
+## Phase 3: Frontend & Interaction [x] [checkpoint: 915b8fe]
 - [x] Task: Add a 'Following' icon link to the global navbar in `src/views/general.nim` routing to `/following`. (c70dfbd)
 - [x] Task: Update `src/views/timeline.nim` to include a `renderFeedHeader` with statistics (X/Y users, last update). (fc9e0e4)
 - [x] Task: Ensure the feed respects the `infiniteScroll` preference in `src/views/timeline.nim` and `src/routes/timeline.nim`. (e2aed00)
