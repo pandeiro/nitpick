@@ -8,8 +8,8 @@ Implement a chronological feed of followed users on the Home Page (/) with a "Sa
 - [x] Task: Create `src/feed_cache.nim` (or extend `redis_cache.nim`) to handle the `nitpick:feed:global` schema. (d95482a)
     - [x] Implement `getGlobalFeed`: Retrieves cached tweet IDs, last update time, and current cursor.
     - [x] Implement `updateGlobalFeed`: Merges new tweets into the cache, handles de-duplication, and updates metadata.
-- [ ] Task: Write tests for feed caching and merging logic in `tests/test_feed_cache.py`.
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Data Layer & Preferences' (Protocol in workflow.md)
+- [x] Task: Write tests for feed caching and merging logic in `tests/test_feed_cache.py`. (1a740a6)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Data Layer & Preferences' (Protocol in workflow.md) (87ecba0)
 
 ## Phase 2: Feed Logic & Routing [x] [checkpoint: 4e86fa9]
 - [x] Task: Implement `fetchGlobalFeed` in `src/api.nim` (or a new `src/feed.nim`). (b6c0be6)
@@ -20,7 +20,7 @@ Implement a chronological feed of followed users on the Home Page (/) with a "Sa
     - [x] Redirect to feed if the user follows >0 people.
     - [x] Call `fetchGlobalFeed` and handle accumulation logic on refresh.
 - [x] Task: Write integration tests for feed fetching and sampling in `tests/test_feed_logic.py`. (b6c0be6)
-- [~] Task: Conductor - User Manual Verification 'Phase 2: Feed Logic & Routing' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Feed Logic & Routing' (Protocol in workflow.md) (87ecba0)
 
 ## Phase 3: Frontend & Interaction [x] [checkpoint: 915b8fe]
 - [x] Task: Add a 'Following' icon link to the global navbar in `src/views/general.nim` routing to `/following`. (c70dfbd)
@@ -31,9 +31,12 @@ Implement a chronological feed of followed users on the Home Page (/) with a "Sa
     - [x] Feed visibility on Home Page.
     - [x] Statistics display.
     - [x] Pagination/Infinite Scroll behavior.
-- [~] Task: Conductor - User Manual Verification 'Phase 3: Frontend & Interaction' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Frontend & Interaction' (Protocol in workflow.md) (87ecba0)
 
 ## Phase 4: Final Polish & Documentation [x] [checkpoint: a960cde]
-- [x] Task: Final UI/UX review for "functional minimalism".
+- [x] Task: Final UI/UX review for "functional minimalism". (87ecba0)
 - [x] Task: Synchronize `conductor/product.md` and `conductor/tech-stack.md` with the new feed features.
-- [~] Task: Conductor - User Manual Verification 'Phase 4: Final Polish & Documentation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Final Polish & Documentation' (Protocol in workflow.md) (87ecba0)
+
+## Phase: Review Fixes
+- [x] Task: Apply review suggestions 12ef0df
