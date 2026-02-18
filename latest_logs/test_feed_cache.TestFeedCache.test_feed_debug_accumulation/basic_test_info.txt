@@ -1,0 +1,14 @@
+tests/test_feed_cache.py::TestFeedCache::test_feed_debug_accumulation
+--------------------------------------------------------------------
+Last Page: http://localhost:7000/.feed
+ Duration: 2.87s
+  Browser: Chrome 144.0.7559.134 / headless
+   Driver: chromedriver 144.0.7559.133
+Timestamp: 1771373438  (Unix Timestamp)
+     Date: Tuesday, February 17, 2026
+     Time: 4:10:38 PM  (PDT, UTC-07:00)
+--------------------------------------------------------------------
+Traceback:
+  File "/Users/mu/Repos/nitpick/tests/test_feed_cache.py", line 44, in test_feed_debug_accumulation
+    assert "tweetIds" in feed_data
+Exception: assert 'tweetIds' in '{}'
