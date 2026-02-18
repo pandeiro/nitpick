@@ -8,7 +8,10 @@
 
 ## Data & Caching
 - **Primary Store:** Redis (Valkey recommended for open-source compliance)
-- **Schema:** Pinned tweets are stored as a JSON-serialized set under the `nitpick:pinned_tweets` key.
+- **Schema:**
+    - Pinned tweets: JSON-serialized set under `nitpick:pinned_tweets`.
+    - Following list: Set of usernames under `following:global`.
+    - Global feed: Compressed Flatty-serialized `GlobalFeed` object under `nitpick:feed:global` (15-min TTL).
 - **Redis Client:** `redpool` and a custom `redis` fork (`zedeus/redis`)
 
 ## Key Libraries & Utilities

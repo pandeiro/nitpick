@@ -20,7 +20,6 @@ class TestFeedCache(BaseTestCase):
         # 3. Verify status code (using seleniumbase's built-in checks)
         assert "nitpick" in self.get_title().lower()
 
-    @pytest.mark.xfail(reason="Phase 2 logic not yet implemented")
     def test_feed_debug_accumulation(self):
         """
         Verifies that the global feed accumulates data correctly using the debug endpoint.
