@@ -8,6 +8,7 @@
 4. **High Code Coverage:** Aim for >80% code coverage for all modules
 5. **User Experience First:** Every decision should prioritize user experience
 6. **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use `CI=true` for watch-mode tools (tests, linters) to ensure single execution.
+7. **Verify Server Before Selenium Tests:** NEVER run Selenium/Integration tests without first establishing that the development server is reachable. Failing to do so wastes tokens and execution time.
 
 ## Task Workflow
 
@@ -186,6 +187,7 @@ The following commands are used *inside* the Docker container by `make` but shou
 - Test both success and failure cases.
 
 ### Integration Testing
+- **CRITICAL:** You MUST verify that the development server is reachable (e.g., via `curl http://localhost:7000`) before initiating any integration or Selenium tests.
 - Test complete user flows
 - Verify database transactions
 - Test authentication and authorization

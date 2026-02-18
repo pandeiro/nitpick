@@ -5,32 +5,34 @@ import karax/[karaxdsl, vdom]
 import renderutils
 import ../types, ../prefs_impl
 
-macro renderPrefs*(): untyped =
-  result = nnkCall.newTree(
-    ident("buildHtml"), ident("tdiv"), nnkStmtList.newTree())
+macro renderPrefs*(prefs: untyped): untyped =
+  let stmtList = nnkStmtList.newTree()
+  result = nnkCall.newTree(ident("buildHtml"), ident("tdiv"), stmtList)
 
   for header, options in prefList:
-    result[2].add nnkCall.newTree(
+    stmtList.add nnkCall.newTree(
       ident("legend"),
       nnkStmtList.newTree(
         nnkCommand.newTree(ident("text"), newLit(header))))
 
     for pref in options:
-      let procName = ident("gen" & capitalizeAscii($pref.kind))
-      let state = nnkDotExpr.newTree(ident("prefs"), ident(pref.name))
-      var stmt = nnkStmtList.newTree(
-        nnkCall.newTree(procName, newLit(pref.name), newLit(pref.label), state))
+      let
+        procName = ident("gen" & capitalizeAscii($pref.kind))
+        fieldName = ident(pref.name)
+      
+      var call = nnkCall.newTree(procName, newLit(pref.name), newLit(pref.label), 
+                                 nnkDotExpr.newTree(prefs, fieldName))
 
       case pref.kind
       of checkbox: discard
-      of input: stmt[0].add newLit(pref.placeholder)
+      of input: call.add newLit(pref.placeholder)
       of select:
         if pref.name == "theme":
-          stmt[0].add ident("themes")
+          call.add ident("themes")
         else:
-          stmt[0].add newLit(pref.options)
+          call.add newLit(pref.options)
 
-      result[2].add stmt
+      stmtList.add call
 
 proc renderPreferences*(prefs: Prefs; path: string; themes: seq[string];
                         prefsUrl: string): VNode =
@@ -39,7 +41,7 @@ proc renderPreferences*(prefs: Prefs; path: string; themes: seq[string];
       form(`method`="post", action="/saveprefs", autocomplete="off"):
         refererField path
 
-        renderPrefs()
+        renderPrefs(prefs)
 
         legend: text "Bookmark"
         p(class="bookmark-note"):
