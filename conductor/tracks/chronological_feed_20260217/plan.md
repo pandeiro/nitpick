@@ -23,7 +23,7 @@ Implement a chronological feed of followed users on the Home Page (/) with a "Sa
 - [~] Task: Conductor - User Manual Verification 'Phase 2: Feed Logic & Routing' (Protocol in workflow.md)
 
 ## Phase 3: Frontend & Interaction [ ]
-- [ ] Task: Add a 'Following' icon link to the global navbar in `src/views/general.nim` routing to `/following`.
+- [x] Task: Add a 'Following' icon link to the global navbar in `src/views/general.nim` routing to `/following`. (c70dfbd)
 - [ ] Task: Update `src/views/timeline.nim` to include a `renderFeedHeader` with statistics (X/Y users, last update).
 - [ ] Task: Ensure the feed respects the `infiniteScroll` preference in `src/views/timeline.nim` and `src/routes/timeline.nim`.
 - [ ] Task: Refine feed styling in `src/sass/timeline.scss` to ensure high-contrast/monochrome adherence.
