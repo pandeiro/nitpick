@@ -48,8 +48,8 @@ class Profile(object):
 
 
 class Timeline(object):
-    newest = 'div[class="timeline-item show-more"]'
-    older = 'div[class="show-more"]'
+    newest = 'nav[class="timeline-item show-more"]'
+    older = 'nav[class="show-more"]'
     end = '.timeline-end'
     none = '.timeline-none'
     protected = '.timeline-protected'
