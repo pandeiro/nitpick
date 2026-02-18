@@ -237,6 +237,9 @@ type
     top*, bottom*: string
     beginning*: bool
     query*: Query
+    sampledCount*: int
+    followingCount*: int
+    lastUpdated*: int64
 
   Chain* = object
     content*: Tweets

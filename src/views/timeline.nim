@@ -88,9 +88,18 @@ proc renderTimelineUsers*(results: Result[User]; prefs: Prefs; path=""): VNode =
     else:
       renderNoMore()
 
+proc renderFeedHeader*(results: Timeline): VNode =
+  if results.followingCount > 0:
+    let timeStr = formatTime(results.lastUpdated)
+    buildHtml(tdiv(class="feed-header")):
+      text &"Showing tweets from {results.sampledCount}/{results.followingCount} followed users. Last updated: {timeStr}"
+  else:
+    buildHtml(tdiv())
+
 proc renderTimelineTweets*(results: Timeline; prefs: Prefs; path: string;
                            pinned=none(Tweet)): VNode =
   buildHtml(tdiv(class="timeline")):
+    renderFeedHeader(results)
     if not results.beginning:
       renderNewer(results.query, parseUri(path).path)
 

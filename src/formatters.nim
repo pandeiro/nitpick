@@ -131,6 +131,11 @@ proc getJoinDate*(user: User): string =
 proc getJoinDateFull*(user: User): string =
   user.joinDate.format("h:mm tt - d MMM YYYY")
 
+proc formatTime*(unix: int64): string =
+  if unix == 0: return "Never"
+  let dt = fromUnix(unix).utc
+  return dt.format("MMM d', 'YYYY' · 'h:mm tt' UTC'")
+
 proc getTime*(tweet: Tweet): string =
   tweet.time.format("MMM d', 'YYYY' · 'h:mm tt' UTC'")
 

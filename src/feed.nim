@@ -41,6 +41,9 @@ proc fetchGlobalFeed*(following: seq[string]; cursor = "";
   # Update the global feed cache with the results
   await updateGlobalFeed(allTweets, searchResult.bottom, sampled)
   
+  # Get the latest feed metadata to populate statistics
+  let feedData = await getGlobalFeed()
+  
   # Return the searchResult cast to Timeline if necessary
   # For now, we'll return a new Timeline object
   result = Timeline(
@@ -50,3 +53,8 @@ proc fetchGlobalFeed*(following: seq[string]; cursor = "";
     bottom: searchResult.bottom,
     query: q
   )
+  if feedData.isSome:
+    let f = feedData.get()
+    result.sampledCount = f.sampledUsers.len
+    result.followingCount = following.len
+    result.lastUpdated = f.lastUpdated
