@@ -113,11 +113,11 @@ genPrefs:
   Feed:
     feedStrategy(select, "Sampling"):
       "Multi-user Feed Strategy"
-      options: ["Sampling", "Sequential"]
+      options: @["Sampling", "Sequential"]
 
     rankingAlgorithm(select, "Chronological"):
       "Ranking Algorithm"
-      options: ["Chronological"]
+      options: @["Chronological"]
 
 iterator allPrefs*(): Pref =
   for k, v in prefList:

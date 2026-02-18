@@ -226,6 +226,12 @@ type
 
   Tweets* = seq[Tweet]
 
+  GlobalFeed* = object
+    tweetIds*: seq[int64]
+    lastUpdated*: int64
+    cursor*: string
+    sampledUsers*: seq[string]
+
   Result*[T] = object
     content*: seq[T]
     top*, bottom*: string

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import asyncdispatch, times, strformat, strutils, tables, hashes, algorithm
+import asyncdispatch, times, strformat, strutils, tables, hashes, algorithm, options, json
 import redis, redpool, flatty, supersnappy
 
 import types, api
@@ -67,6 +67,7 @@ template uidKey(name: string): string = "pid:" & $(hash(name) div 1_000_000)
 template userKey(name: string): string = "p:" & name
 template listKey(l: List): string = "l:" & l.id
 template tweetKey(id: int64): string = "t:" & $id
+template globalFeedKey(): string = "nitpick:feed:global"
 
 proc get(query: string): Future[string] {.async.} =
   pool.withAcquire(r):
@@ -278,3 +279,62 @@ proc getFollowingList*(): Future[seq[string]] {.async.} =
     for m in members:
       if m.len > 0:
         result.add(m)
+
+proc getGlobalFeed*(): Future[Option[GlobalFeed]] {.async.} =
+  let data = await get(globalFeedKey())
+  if data != redisNil and data.len > 0:
+    var feed: GlobalFeed
+    try:
+      feed = fromFlatty(uncompress(data), GlobalFeed)
+      return some(feed)
+    except:
+      echo "Decompressing global feed failed"
+  return none(GlobalFeed)
+
+proc updateGlobalFeed*(newTweets: seq[Tweet]; cursor: string;
+                      sampled: seq[string]) {.async.} =
+  let existing = await getGlobalFeed()
+  var feed: GlobalFeed
+  
+  if existing.isSome:
+    feed = existing.get()
+  
+  # Accumulate sampled users
+  for user in sampled:
+    if user notin feed.sampledUsers:
+      feed.sampledUsers.add user
+  
+  # Accumulate and de-duplicate tweet IDs
+  var newIds: seq[int64] = @[]
+  for t in newTweets:
+    if t.id notin feed.tweetIds:
+      newIds.add t.id
+  
+  if newIds.len > 0:
+    feed.tweetIds = newIds & feed.tweetIds
+    # Keep only the latest 1000 tweets in global feed cache
+    if feed.tweetIds.len > 1000:
+      feed.tweetIds.setLen(1000)
+  
+  feed.cursor = cursor
+  feed.lastUpdated = getTime().toUnix()
+  
+  # TTL of 15 minutes (900 seconds) for the feed accumulation window
+  await setEx(globalFeedKey(), 900, compress(toFlatty(feed)))
+
+proc getGlobalFeedDebug*(): Future[JsonNode] {.async.} =
+  let feed = await getGlobalFeed()
+  if feed.isSome:
+    let f = feed.get()
+    return %*{
+      "tweetIds": f.tweetIds,
+      "lastUpdated": f.lastUpdated,
+      "cursor": f.cursor,
+      "sampledUsers": f.sampledUsers
+    }
+  else:
+    return %*{}
+
+proc clearGlobalFeed*() {.async.} =
+  pool.withAcquire(r):
+    discard await r.del(globalFeedKey())
