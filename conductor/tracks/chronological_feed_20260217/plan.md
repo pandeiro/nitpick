@@ -11,7 +11,7 @@ Implement a chronological feed of followed users on the Home Page (/) with a "Sa
 - [ ] Task: Write tests for feed caching and merging logic in `tests/test_feed_cache.py`.
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Data Layer & Preferences' (Protocol in workflow.md)
 
-## Phase 2: Feed Logic & Routing [ ]
+## Phase 2: Feed Logic & Routing [x] [checkpoint: 4e86fa9]
 - [x] Task: Implement `fetchGlobalFeed` in `src/api.nim` (or a new `src/feed.nim`). (b6c0be6)
     - [x] Logic for randomly sampling ~15 followed users.
     - [x] Constructing the OR-joined search query.
