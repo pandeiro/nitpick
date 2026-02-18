@@ -9,17 +9,31 @@ proc fetchGlobalFeed*(following: seq[string]; cursor = "";
   if following.len == 0:
     return Timeline()
 
-  var sampled: seq[string] = following
-  if strategy == "Sampling":
-    if sampled.len > 15:
+  # 1. Load latest feed metadata
+  let feedData = await getGlobalFeed()
+  var 
+    sampled: seq[string]
+    useCursor = cursor
+
+  # 2. Strategy: Initial Fetch (no cursor) vs Load More (has cursor)
+  if useCursor.len == 0:
+    # New sample
+    sampled = following
+    if strategy == "Sampling" and sampled.len > 15:
       sampled.shuffle()
       sampled.setLen(15)
-  else:
-    # Sequential (Future)
-    if sampled.len > 15:
+    elif strategy == "Sequential" and sampled.len > 15:
       sampled.setLen(15)
+  else:
+    # Use existing sample for valid pagination
+    if feedData.isSome:
+      sampled = feedData.get().sampledUsers
+    else:
+      # Fallback (shouldn't happen with valid cursor)
+      sampled = following
+      if sampled.len > 15: sampled.setLen(15)
 
-  # Construct search query: (from:user1 OR from:user2 OR ...)
+  # 3. Construct search query: (from:user1 OR from:user2 OR ...)
   var queryStr = "("
   for i, user in sampled:
     queryStr.add "from:" & user
@@ -27,34 +41,48 @@ proc fetchGlobalFeed*(following: seq[string]; cursor = "";
       queryStr.add " OR "
   queryStr.add ")"
 
-  # Fetch using search API
-  let q = Query(text: queryStr, kind: tweets)
-  # We use the search API directly
-  let searchResult = await getGraphTweetSearch(q, cursor)
+  # 4. Fetch from Twitter Search
+  let 
+    q = Query(text: queryStr, kind: tweets)
+    searchResult = await getGraphTweetSearch(q, useCursor)
   
-  # Flatten threads into a single list of tweets for caching
+  # 5. Accumulate results
   var allTweets: seq[Tweet] = @[]
   for thread in searchResult.content:
     for t in thread:
       allTweets.add t
-
-  # Update the global feed cache with the results
+  
+  # Update global feed in Redis
+  # Note: if it was a "Load More", searchResult.bottom is the next page's cursor
   await updateGlobalFeed(allTweets, searchResult.bottom, sampled)
-  
-  # Get the latest feed metadata to populate statistics
-  let feedData = await getGlobalFeed()
-  
-  # Return the searchResult cast to Timeline if necessary
-  # For now, we'll return a new Timeline object
-  result = Timeline(
-    content: searchResult.content,
-    beginning: searchResult.beginning,
-    top: searchResult.top,
-    bottom: searchResult.bottom,
-    query: q
-  )
-  if feedData.isSome:
-    let f = feedData.get()
-    result.sampledCount = f.sampledUsers.len
-    result.followingCount = following.len
-    result.lastUpdated = f.lastUpdated
+
+  # 6. Prepare final timeline from accumulated cache
+  # We read the latest IDs and then resolve them
+  let updatedFeed = await getGlobalFeed()
+  if updatedFeed.isSome:
+    let f = updatedFeed.get()
+    
+    # Resolve the latest 50 tweet IDs into objects
+    var latestIds = f.tweetIds
+    if latestIds.len > 50: latestIds.setLen(50)
+    let tweets = await getCachedTweets(latestIds)
+    
+    # Wrap tweets into threads for Timeline compatibility
+    var threads: seq[Tweets] = @[]
+    for t in tweets:
+      threads.add @[t]
+      
+    result = Timeline(
+      content: threads,
+      beginning: useCursor.len == 0,
+      top: searchResult.top,
+      bottom: searchResult.bottom,
+      query: q,
+      sampledCount: f.sampledUsers.len,
+      followingCount: following.len,
+      lastUpdated: f.lastUpdated
+    )
+  else:
+    # Fallback to current search result if cache failed
+    result = searchResult
+    result.beginning = useCursor.len == 0

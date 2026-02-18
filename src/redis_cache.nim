@@ -166,6 +166,13 @@ proc getCachedTweet*(id: int64; fetch=true): Future[Tweet] {.async.} =
     if not result.isNil:
       await cache(result)
 
+proc getCachedTweets*(ids: seq[int64]): Future[seq[Tweet]] {.async.} =
+  result = @[]
+  for id in ids:
+    let tweet = await getCachedTweet(id, fetch=false)
+    if not tweet.isNil:
+      result.add tweet
+
 proc getCachedPhotoRail*(id: string): Future[PhotoRail] {.async.} =
   if id.len == 0: return
   let rail = await get("pr2:" & toLower(id))
@@ -305,13 +312,13 @@ proc updateGlobalFeed*(newTweets: seq[Tweet]; cursor: string;
       feed.sampledUsers.add user
   
   # Accumulate and de-duplicate tweet IDs
-  var newIds: seq[int64] = @[]
   for t in newTweets:
     if t.id notin feed.tweetIds:
-      newIds.add t.id
+      feed.tweetIds.add t.id
   
-  if newIds.len > 0:
-    feed.tweetIds = newIds & feed.tweetIds
+  if feed.tweetIds.len > 0:
+    # Sort IDs descending (chronological)
+    feed.tweetIds.sort(SortOrder.Descending)
     # Keep only the latest 1000 tweets in global feed cache
     if feed.tweetIds.len > 1000:
       feed.tweetIds.setLen(1000)
