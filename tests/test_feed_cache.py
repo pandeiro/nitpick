@@ -11,14 +11,39 @@ class TestFeedCache(BaseTestCase):
         """
         # 1. Follow some users (if not already)
         self.open_nitter("jack")
-        self.click(".follow-btn")
+        if self.is_element_visible(".follow-btn"):
+            self.click(".follow-btn")
         
         # 2. Go to home page to trigger feed generation
         self.open_nitter()
         
         # 3. Verify status code (using seleniumbase's built-in checks)
-        # We check current URL or title if necessary
         assert "nitpick" in self.get_title().lower()
+
+    def test_feed_debug_accumulation(self):
+        """
+        Verifies that the global feed accumulates data correctly using the debug endpoint.
+        Note: This test is intended to fail until the Home Page or API calls updateGlobalFeed.
+        """
+        # 1. Clear the global feed
+        self.open_nitter(".feed/clear")
+        self.open_nitter(".feed")
+        assert self.get_text("body") == "{}"
+
+        # 2. Follow a user
+        self.open_nitter("jack")
+        if self.is_element_visible(".follow-btn"):
+            self.click(".follow-btn")
+        
+        # 3. Trigger Home Page (which should eventually update the feed)
+        self.open_nitter()
+        
+        # 4. Check if feed is populated (this will fail until Phase 2 is implemented)
+        self.open_nitter(".feed")
+        feed_data = self.get_text("body")
+        assert "tweetIds" in feed_data
+        assert "sampledUsers" in feed_data
+        assert "jack" in feed_data.lower()
 
     def test_feed_strategy_settings(self):
         """
