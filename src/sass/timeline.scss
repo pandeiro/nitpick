@@ -157,3 +157,12 @@
   position: relative;
   background-color: var(--bg_panel);
 }
+
+.feed-header {
+  background-color: var(--bg_panel);
+  color: var(--fg_color);
+  border-bottom: 1px solid var(--border_grey);
+  text-align: center;
+  padding: 0.5em;
+  font-weight: bold;
+}
