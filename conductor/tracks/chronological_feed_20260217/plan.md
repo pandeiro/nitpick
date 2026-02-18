@@ -2,7 +2,7 @@
 
 Implement a chronological feed of followed users on the Home Page (/) with a "Sampling with Accumulation" strategy to efficiently handle Twitter's query limits.
 
-## Phase 1: Data Layer & Preferences [ ]
+## Phase 1: Data Layer & Preferences [x] [checkpoint: 58f1c37]
 - [x] Task: Update `src/types.nim` to include new Preference fields for Feed strategy and ranking. (5e4a917)
 - [x] Task: Update `src/prefs_impl.nim` to add the "Feed" option group and strategy dropdown. (5e4a917)
 - [x] Task: Create `src/feed_cache.nim` (or extend `redis_cache.nim`) to handle the `nitpick:feed:global` schema. (d95482a)
