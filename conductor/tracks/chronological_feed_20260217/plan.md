@@ -25,8 +25,8 @@ Implement a chronological feed of followed users on the Home Page (/) with a "Sa
 ## Phase 3: Frontend & Interaction [ ]
 - [x] Task: Add a 'Following' icon link to the global navbar in `src/views/general.nim` routing to `/following`. (c70dfbd)
 - [x] Task: Update `src/views/timeline.nim` to include a `renderFeedHeader` with statistics (X/Y users, last update). (fc9e0e4)
-- [ ] Task: Ensure the feed respects the `infiniteScroll` preference in `src/views/timeline.nim` and `src/routes/timeline.nim`.
-- [ ] Task: Refine feed styling in `src/sass/timeline.scss` to ensure high-contrast/monochrome adherence.
+- [x] Task: Ensure the feed respects the `infiniteScroll` preference in `src/views/timeline.nim` and `src/routes/timeline.nim`. (e2aed00)
+- [x] Task: Refine feed styling in `src/sass/timeline.scss` to ensure high-contrast/monochrome adherence. (23441b4)
 - [ ] Task: Write SeleniumBase tests in `tests/test_feed_ui.py` to verify:
     - [ ] Feed visibility on Home Page.
     - [ ] Statistics display.
