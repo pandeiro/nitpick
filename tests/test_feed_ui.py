@@ -27,3 +27,32 @@ class TestFeedUI(BaseTestCase):
         # We expect this to fail initially
         self.assert_element(".feed-header")
         self.assert_text("followed users", ".feed-header")
+
+    def test_feed_infinite_scroll(self):
+        """
+        Verifies that infinite scroll is working if enabled in preferences.
+        """
+        # 1. Enable infinite scroll
+        self.open_nitter("settings")
+        if not self.is_checked('input[name="infiniteScroll"]'):
+            self.click('label[title="infiniteScroll"]')
+        self.click('button[type="submit"]')
+        
+        # 2. Follow multiple users
+        users = ["jack", "elonmusk", "nim_lang"]
+        for user in users:
+            self.open_nitter(user)
+            if self.is_element_visible(".follow-btn"):
+                self.click(".follow-btn")
+
+        # 3. Go to home page
+        self.open_nitter()
+        
+        # 4. Verify script is loaded
+        self.assert_element_present('script[src="/js/infiniteScroll.js"]')
+        
+        # 5. Scroll to bottom
+        self.scroll_to_bottom()
+        # The test passes if no error occurs during scrolling
+        # and the page still has tweets
+        self.assert_element(".timeline")

@@ -87,7 +87,11 @@ routes:
       cursor = @"cursor"
     if following.len > 0:
       let timeline = await fetchGlobalFeed(following, cursor, prefs.feedStrategy)
-      resp renderMain(renderTimelineTweets(timeline, prefs, "/"), request, cfg, prefs)
+      let body = renderTimelineTweets(timeline, prefs, "/")
+      if @"scroll".len > 0:
+        resp $body
+      else:
+        resp renderMain(body, request, cfg, prefs)
     else:
       resp renderMain(renderSearch(), request, cfg, prefs)
 
