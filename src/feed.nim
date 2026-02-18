@@ -4,8 +4,14 @@ import types, api, redis_cache
 
 randomize()
 
-proc fetchGlobalFeed*(following: seq[string]; cursor = "";
+proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
                      strategy = "Sampling"): Future[Timeline] {.async.} =
+  ## Fetches a chronological feed for the given list of followed users.
+  ## Implements "Sampling with Accumulation":
+  ## 1. On initial load, samples a subset of users (default 15).
+  ## 2. Fetches their latest tweets via Twitter search.
+  ## 3. Merges and de-duplicates results into a persistent Redis-backed global feed.
+  ## 4. For pagination (load more), uses the same sampled users to maintain cursor consistency.
   if following.len == 0:
     return Timeline()
 
@@ -42,8 +48,12 @@ proc fetchGlobalFeed*(following: seq[string]; cursor = "";
   queryStr.add ")"
 
   # 4. Fetch from Twitter Search
+  var excludes: seq[string] = @["replies"] # Always exclude replies as per 1a
+  if prefs.hideRetweets:
+    excludes.add "nativeretweets"
+  
   let 
-    q = Query(text: queryStr, kind: tweets)
+    q = Query(text: queryStr, kind: tweets, excludes: excludes)
     searchResult = await getGraphTweetSearch(q, useCursor)
   
   # 5. Accumulate results

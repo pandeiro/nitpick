@@ -1,6 +1,11 @@
 @import "_variables";
 @import "_mixins";
 
+.container {
+  max-width: 960px;
+  margin: auto;
+}
+
 .panel-container {
   margin: auto;
   font-size: 130%;

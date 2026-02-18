@@ -100,4 +100,4 @@ class BaseTestCase(BaseCase):
 
 def get_timeline_tweet(num=1):
     # Support both standard timeline and our new pinned gallery
-    return Tweet(f'div:is(.timeline, .pinned-gallery) > div:nth-child({num}) ')
+    return Tweet(f'div:is(.timeline, .pinned-gallery) > div:nth-of-type({num}) ')

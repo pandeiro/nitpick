@@ -86,7 +86,7 @@ routes:
       following = await getFollowingList()
       cursor = @"cursor"
     if following.len > 0:
-      let timeline = await fetchGlobalFeed(following, cursor, prefs.feedStrategy)
+      let timeline = await fetchGlobalFeed(following, prefs, cursor, prefs.feedStrategy)
       let body = renderTimelineTweets(timeline, prefs, "/")
       if @"scroll".len > 0:
         resp $body

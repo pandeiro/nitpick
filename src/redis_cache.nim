@@ -288,6 +288,9 @@ proc getFollowingList*(): Future[seq[string]] {.async.} =
         result.add(m)
 
 proc getGlobalFeed*(): Future[Option[GlobalFeed]] {.async.} =
+  ## Retrieves the current global feed metadata from Redis.
+  ## Key: nitpick:feed:global
+  ## Returns an Option containing tweet IDs, cursor, and sampled users.
   let data = await get(globalFeedKey())
   if data != redisNil and data.len > 0:
     var feed: GlobalFeed
@@ -300,6 +303,13 @@ proc getGlobalFeed*(): Future[Option[GlobalFeed]] {.async.} =
 
 proc updateGlobalFeed*(newTweets: seq[Tweet]; cursor: string;
                       sampled: seq[string]) {.async.} =
+  ## Updates the global feed in Redis with newly fetched tweets.
+  ## Implements "Accumulation" logic:
+  ## - Merges new tweet IDs with existing ones.
+  ## - De-duplicates and sorts IDs in descending (chronological) order.
+  ## - Keeps the total count capped at 1000.
+  ## - Updates the list of sampled users to track current feed coverage.
+  ## - Resets the 15-minute TTL on every update.
   let existing = await getGlobalFeed()
   var feed: GlobalFeed
   

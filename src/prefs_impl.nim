@@ -78,6 +78,9 @@ genPrefs:
     hideReplies(checkbox, false):
       "Hide tweet replies"
 
+    hideRetweets(checkbox, false):
+      "Hide retweets"
+
     squareAvatars(checkbox, false):
       "Square profile pictures"
 

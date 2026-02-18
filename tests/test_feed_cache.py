@@ -58,3 +58,11 @@ class TestFeedCache(BaseTestCase):
         assert self.is_text_visible("Ranking Algorithm")
         assert self.is_element_visible('select[name="rankingAlgorithm"]')
         assert self.is_text_visible("Chronological")
+
+    def test_feed_filtering_preferences(self):
+        """
+        Verifies that the feed filtering preferences (Hide Retweets) are present.
+        """
+        self.open_nitter("settings")
+        self.assert_text("Hide retweets")
+        self.assert_element_present('input[name="hideRetweets"]')

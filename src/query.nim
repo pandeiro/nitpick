@@ -72,8 +72,10 @@ proc genQueryParam*(query: Query): string =
   for f in query.filters:
     filters.add "filter:" & f
   for e in query.excludes:
-    if e == "nativeretweets": continue
-    filters.add "-filter:" & e
+    if e == "nativeretweets":
+      filters.add "-filter:retweets"
+    else:
+      filters.add "-filter:" & e
   for i in query.includes:
     filters.add "include:" & i
 

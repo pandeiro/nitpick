@@ -1,7 +1,7 @@
 @import "_variables";
 
 .timeline-container {
-  @include panel(100%, 600px);
+  @include panel(100%, 960px);
 }
 
 .timeline > div:not(:first-child) {

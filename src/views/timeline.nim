@@ -20,22 +20,22 @@ proc renderNewer*(query: Query; path: string; focus=""): VNode =
     q = genQueryUrl(query)
     url = if q.len > 0: "?" & q else: ""
     p = if focus.len > 0: path.replace("#m", focus) else: path
-  buildHtml(tdiv(class="timeline-item show-more")):
+  buildHtml(nav(class="timeline-item show-more")):
     a(href=(p & url)):
       text "Load newest"
 
 proc renderMore*(query: Query; cursor: string; focus=""): VNode =
-  buildHtml(tdiv(class="show-more")):
+  buildHtml(nav(class="show-more")):
     a(href=(&"?{getQuery(query)}cursor={encodeUrl(cursor, usePlus=false)}{focus}")):
       text "Load more"
 
 proc renderNoMore(): VNode =
-  buildHtml(tdiv(class="timeline-footer")):
+  buildHtml(footer(class="timeline-footer")):
     h2(class="timeline-end"):
       text "No more items"
 
 proc renderNoneFound(): VNode =
-  buildHtml(tdiv(class="timeline-header")):
+  buildHtml(header(class="timeline-header")):
     h2(class="timeline-none"):
       text "No items found"
 
@@ -89,17 +89,15 @@ proc renderTimelineUsers*(results: Result[User]; prefs: Prefs; path=""): VNode =
       renderNoMore()
 
 proc renderFeedHeader*(results: Timeline): VNode =
-  if results.followingCount > 0:
-    let timeStr = formatTime(results.lastUpdated)
-    buildHtml(tdiv(class="feed-header")):
-      text &"Showing tweets from {results.sampledCount}/{results.followingCount} followed users. Last updated: {timeStr}"
-  else:
-    buildHtml(tdiv())
+  let timeStr = formatTime(results.lastUpdated)
+  buildHtml(header(class="feed-header")):
+    text &"Showing tweets from {results.sampledCount}/{results.followingCount} followed users. Last updated: {timeStr}"
 
 proc renderTimelineTweets*(results: Timeline; prefs: Prefs; path: string;
                            pinned=none(Tweet)): VNode =
   buildHtml(tdiv(class="timeline")):
-    renderFeedHeader(results)
+    if results.followingCount > 0:
+      renderFeedHeader(results)
     if not results.beginning:
       renderNewer(results.query, parseUri(path).path)
 
