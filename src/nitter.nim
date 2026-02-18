@@ -6,8 +6,8 @@ from os import getEnv
 
 import jester
 
-import types, config, prefs, formatters, redis_cache, http_pool, auth, apiutils
-import views/[general, about]
+import types, config, prefs, formatters, redis_cache, http_pool, auth, apiutils, feed
+import views/[general, about, timeline]
 import routes/[
   preferences, timeline, status, media, search, rss, list, debug,
   unsupported, embed, resolver, router_utils, follow, pinned]
@@ -81,7 +81,15 @@ routes:
     respUnpin(cfg)
 
   get "/":
-    resp renderMain(renderSearch(), request, cfg, requestPrefs())
+    let
+      prefs = requestPrefs()
+      following = await getFollowingList()
+      cursor = @"cursor"
+    if following.len > 0:
+      let timeline = await fetchGlobalFeed(following, cursor, prefs.feedStrategy)
+      resp renderMain(renderTimelineTweets(timeline, prefs, "/"), request, cfg, prefs)
+    else:
+      resp renderMain(renderSearch(), request, cfg, prefs)
 
   get "/about":
     resp renderMain(renderAbout(), request, cfg, requestPrefs())
