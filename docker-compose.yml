@@ -16,6 +16,8 @@ services:
       timeout: 5s
       retries: 2
     user: "998:998"
+    labels:
+      - "logging=enabled"
     read_only: true
     security_opt:
       - no-new-privileges:true
