@@ -89,9 +89,9 @@ proc renderTimelineUsers*(results: Result[User]; prefs: Prefs; path=""): VNode =
       renderNoMore()
 
 proc renderFeedHeader*(results: Timeline): VNode =
-  let timeStr = formatTime(results.lastUpdated)
-  buildHtml(header(class="feed-header")):
-    text &"Showing tweets from {results.sampledCount}/{results.followingCount} followed users. Last updated: {timeStr}"
+  buildHtml(header(class="feed-header", style="display:none")):
+    script(type="text/javascript"):
+      text &"console.log('[feed] Showing tweets from {results.sampledCount}/{results.followingCount} followed users. Last updated: {formatTime(results.lastUpdated)}');"
 
 proc renderTimelineTweets*(results: Timeline; prefs: Prefs; path: string;
                            pinned=none(Tweet)): VNode =

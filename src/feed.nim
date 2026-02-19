@@ -106,7 +106,7 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
     for t in tweets:
       threads.add @[t]
       
-    info "[feed] Feed generation complete. ", f.tweetIds.len, " total tweets in global cache."
+    info "[feed] Feed generation complete. ", f.tweetIds.len, " total tweets in global cache. Sampling ", f.sampledUsers.len, "/", following.len, " followed users."
     result = Timeline(
       content: threads,
       beginning: useCursor.len == 0,
