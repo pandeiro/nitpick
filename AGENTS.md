@@ -22,3 +22,12 @@ Or use the full path to mise binaries:
 - **Typecheck**: `nim check src/nitter.nim`
 - **Build**: `nimble build`
 - **Install deps**: `nimble install -y`
+
+## Typecheck After Changes
+
+Always run `nim check src/nitter.nim` after modifying any `.nim` files to catch type errors, missing imports, and syntax issues before committing.
+
+## Code Style
+
+- Do not add comments unless explicitly requested
+- Follow existing patterns and conventions in the codebase
