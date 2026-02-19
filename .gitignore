@@ -14,3 +14,4 @@ guest_accounts.json*
 sessions.json*
 dump.rdb
 /.nimble
+mise.toml
