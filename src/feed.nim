@@ -76,7 +76,12 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
     for t in thread:
       allTweets.add t
   
-  # Update global feed in Redis
+  # Cache all fetched tweets so they can be resolved later
+  if allTweets.len > 0:
+    info "[feed] Caching ", allTweets.len, " tweets to Redis."
+    await cache(allTweets)
+  
+  # Update global feed in Redis (stores only tweet IDs)
   # Note: if it was a "Load More", searchResult.bottom is the next page's cursor
   await updateGlobalFeed(allTweets, searchResult.bottom, sampled)
 
@@ -92,6 +97,9 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
     
     info "[feed] Resolving ", latestIds.len, " tweet IDs from cache to build final timeline."
     let tweets = await getCachedTweets(latestIds)
+    
+    if tweets.len < latestIds.len:
+      warn "[feed] Cache miss: requested ", latestIds.len, " tweets, only found ", tweets.len, " in cache."
     
     # Wrap tweets into threads for Timeline compatibility
     var threads: seq[Tweets] = @[]
