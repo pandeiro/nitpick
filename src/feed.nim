@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import asyncdispatch, random, algorithm, options, logging, strutils
+import asyncdispatch, random, options, logging, strutils
 import types, api, redis_cache
 
 randomize()

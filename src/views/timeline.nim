@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 import strutils, strformat, algorithm, uri, options
-import karax/[karaxdsl, vdom]
+import karax/[karaxdsl, vdom, vstyles]
 
 import ".."/[types, query, formatters]
 import tweet, renderutils
@@ -89,7 +89,7 @@ proc renderTimelineUsers*(results: Result[User]; prefs: Prefs; path=""): VNode =
       renderNoMore()
 
 proc renderFeedHeader*(results: Timeline): VNode =
-  buildHtml(header(class="feed-header", style="display:none")):
+  buildHtml(header(class="feed-header", style={display: "none"})):
     script(type="text/javascript"):
       text &"console.log('[feed] Showing tweets from {results.sampledCount}/{results.followingCount} followed users. Last updated: {formatTime(results.lastUpdated)}');"
 
