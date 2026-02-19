@@ -301,25 +301,20 @@ proc getGlobalFeed*(): Future[Option[GlobalFeed]] {.async.} =
       echo "Decompressing global feed failed"
   return none(GlobalFeed)
 
-proc updateGlobalFeed*(newTweets: seq[Tweet]; cursor: string;
-                      sampled: seq[string]) {.async.} =
+proc updateGlobalFeed*(newTweets: seq[Tweet]; 
+                       searchPool: seq[SearchPoolEntry]) {.async.} =
   ## Updates the global feed in Redis with newly fetched tweets.
   ## Implements "Accumulation" logic:
   ## - Merges new tweet IDs with existing ones.
   ## - De-duplicates and sorts IDs in descending (chronological) order.
   ## - Keeps the total count capped at 1000.
-  ## - Updates the list of sampled users to track current feed coverage.
-  ## - Resets the 15-minute TTL on every update.
+  ## - Updates the search pool with new cursors for pagination.
+  ## - Resets the 60-minute TTL on every update.
   let existing = await getGlobalFeed()
   var feed: GlobalFeed
   
   if existing.isSome:
     feed = existing.get()
-  
-  # Accumulate sampled users
-  for user in sampled:
-    if user notin feed.sampledUsers:
-      feed.sampledUsers.add user
   
   # Accumulate and de-duplicate tweet IDs
   for t in newTweets:
@@ -333,21 +328,26 @@ proc updateGlobalFeed*(newTweets: seq[Tweet]; cursor: string;
     if feed.tweetIds.len > 1000:
       feed.tweetIds.setLen(1000)
   
-  feed.cursor = cursor
+  feed.searchPool = searchPool
   feed.lastUpdated = getTime().toUnix()
   
-  # TTL of 15 minutes (900 seconds) for the feed accumulation window
-  await setEx(globalFeedKey(), 900, compress(toFlatty(feed)))
+  # TTL of 60 minutes (3600 seconds) for the feed accumulation window
+  await setEx(globalFeedKey(), 3600, compress(toFlatty(feed)))
 
 proc getGlobalFeedDebug*(): Future[JsonNode] {.async.} =
   let feed = await getGlobalFeed()
   if feed.isSome:
     let f = feed.get()
+    var poolJson = newJArray()
+    for entry in f.searchPool:
+      poolJson.add %*{
+        "users": entry.users,
+        "cursor": entry.cursor
+      }
     return %*{
       "tweetIds": f.tweetIds,
       "lastUpdated": f.lastUpdated,
-      "cursor": f.cursor,
-      "sampledUsers": f.sampledUsers
+      "searchPool": poolJson
     }
   else:
     return %*{}

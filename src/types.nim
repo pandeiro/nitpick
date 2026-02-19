@@ -226,11 +226,14 @@ type
 
   Tweets* = seq[Tweet]
 
+  SearchPoolEntry* = object
+    users*: seq[string]
+    cursor*: string
+
   GlobalFeed* = object
     tweetIds*: seq[int64]
     lastUpdated*: int64
-    cursor*: string
-    sampledUsers*: seq[string]
+    searchPool*: seq[SearchPoolEntry]
 
   Result*[T] = object
     content*: seq[T]
