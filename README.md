@@ -9,9 +9,13 @@ Attempts to add custom features to Nitter:
 - chronological feed
 - etc (roadmap to come)
 
-### Development (Docker based flow)
+## Development
 
-In lieu of local Nim/Redis configuration, use the provided Docker environment for all development and testing.
+### Docker-based Flow (Host Environment)
+
+**Requirements:** Host machine with Docker and docker-compose installed.
+
+**Advantages:** Run the full system (Nitpick + Redis), execute integration tests.
 
 ```bash
 make dev          # Start Nitpick and Redis in the background
@@ -25,6 +29,21 @@ make down         # Stop the development environment
 The Docker environment automatically handles dependency installation, SCSS compilation, and configuration setup (`nitter.conf`).
 
 By default it exposes Nitpick on `http://localhost:7000`.
+
+### Mise-based Flow (Remote/Container Development)
+
+**Requirements:** [mise](https://mise.jdx.dev/) installed. Works inside containers or remote environments.
+
+**Advantages:** Lightweight, fast iteration for code changes without full Docker stack.
+
+```bash
+mise install                    # Install Nim and tools from mise.toml
+mise exec -- nimble install -y  # Install Nim dependencies
+mise exec -- nimble build       # Build the project
+mise exec -- nim check src/nitter.nim  # Typecheck after changes
+```
+
+For agents working in this environment, see `AGENTS.md` for detailed setup and workflow guidelines.
 
 ---
 
