@@ -31,3 +31,30 @@ Always run `nim check src/nitter.nim` after modifying any `.nim` files to catch 
 
 - Do not add comments unless explicitly requested
 - Follow existing patterns and conventions in the codebase
+
+## Architecture
+
+### Chronological Feed
+
+The chronological feed (`src/feed.nim`) fetches tweets from followed users via Twitter's search API.
+
+**Search Pool Strategy:**
+- Samples up to 30 users, split into 2 chunks of 15
+- Each chunk is a `SearchPoolEntry` (users + cursor)
+- Twitter search queries are limited; 15 users per query keeps queries manageable
+- Chunks execute in parallel for faster initial loads
+
+**Multi-Cursor Pagination:**
+- Each pool entry tracks its own cursor for "Load More" requests
+- On pagination, all non-exhausted entries are queried in parallel
+- Results are merged and deduplicated before caching
+
+**Redis Accumulation:**
+- Global feed cached in Redis with 60-minute TTL
+- Each request accumulates new tweets into the existing cache
+- Deduplicates by tweet ID, keeps latest 1000 tweets sorted chronologically
+- Key: `nitpick:feed:global` (see `src/redis_cache.nim`)
+
+**Key Types (`src/types.nim`):**
+- `SearchPoolEntry`: users + cursor for one parallel query
+- `GlobalFeed`: tweetIds + searchPool + lastUpdated

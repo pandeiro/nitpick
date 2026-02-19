@@ -6,7 +6,7 @@
 
 Attempts to add custom features to Nitter:
 - follow lists
-- chronological feed
+- chronological feed (parallel Twitter searches across followed users, cached in Redis)
 - etc (roadmap to come)
 
 ## Development
