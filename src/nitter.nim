@@ -3,6 +3,7 @@ import asyncdispatch, strformat, logging
 from net import Port
 from htmlgen import a
 from os import getEnv
+import karax/[karaxdsl, vdom]
 
 import jester
 
@@ -95,7 +96,9 @@ routes:
       lists = await getListNames()
     if following.len > 0:
       let timeline = await fetchFeed(following, prefs, cursor, prefs.feedStrategy, listName)
-      let body = renderTimelineTweets(timeline, prefs, "/", listName = listName)
+      let tweets = renderTimelineTweets(timeline, prefs, "/", listName = listName)
+      let body = buildHtml(tdiv(class="timeline-container")):
+        tweets
       if @"scroll".len > 0:
         resp $body
       else:
