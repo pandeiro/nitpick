@@ -1,7 +1,7 @@
 @import "_variables";
 
 .timeline-container {
-  @include panel(100%, 960px);
+  @include panel(100%, 680px);
 }
 
 .timeline > div:not(:first-child) {
@@ -152,7 +152,7 @@
   overflow-wrap: break-word;
   border-left-width: 0;
   min-width: 0;
-  padding: 0.75em;
+  padding: 1em;
   display: flex;
   position: relative;
   background-color: var(--bg_panel);
@@ -165,4 +165,16 @@
   text-align: center;
   padding: 0.5em;
   font-weight: bold;
+}
+
+@media (max-width: 680px) {
+  .timeline-container {
+    width: 100%;
+    padding: 0 12px;
+    box-sizing: border-box;
+  }
+
+  .timeline-item {
+    padding: 1em 0.75em;
+  }
 }
