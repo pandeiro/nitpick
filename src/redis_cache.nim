@@ -162,8 +162,9 @@ proc getCachedTweet*(id: int64; fetch=true): Future[Tweet] {.async.} =
   if tweet != redisNil:
     tweet.deserialize(Tweet)
   elif fetch:
-    result = await getGraphTweetResult($id)
-    if not result.isNil:
+    let conv = await getTweet($id)
+    if not conv.isNil and not conv.tweet.isNil:
+      result = conv.tweet
       await cache(result)
 
 proc getCachedTweets*(ids: seq[int64]): Future[seq[Tweet]] {.async.} =

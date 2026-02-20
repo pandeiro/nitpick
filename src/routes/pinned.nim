@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import asyncdispatch, strutils
+import asyncdispatch, strutils, logging
 
 import jester, karax/vdom
 
 import router_utils
-import ".."/[types, redis_cache, api]
+import ".."/[types, redis_cache]
 import ../views/[general, pinned]
 
 export pinned
@@ -23,15 +23,17 @@ template respPin*(cfg: Config) =
   
   try:
     let tweetId = parseBiggestInt(tweetIdStr)
-    # Try fetching from cache first, then API
     let tweet = await getCachedTweet(tweetId)
     if tweet != nil and tweet.id != 0:
       if tweet.user.username.len > 0:
         await cacheUserId(tweet.user.username, tweet.user.id)
         await cache(tweet.user)
       discard await addPinnedTweet(tweet)
+      info "pinned tweet: ", tweetId
+    else:
+      warn "failed to pin tweet (not found): ", tweetId
   except:
-    discard # Fail gracefully
+    warn "failed to pin tweet: ", tweetIdStr, " error: ", getCurrentExceptionMsg()
   redirect("/pinned")
 
 template respUnpin*(cfg: Config) =
