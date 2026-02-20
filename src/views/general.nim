@@ -27,10 +27,8 @@ proc renderNavbar(cfg: Config; req: Request; rss, canonical: string;
     tdiv(class="inner-nav"):
       tdiv(class="nav-item"):
         tdiv(class="list-dropdown"):
-          a(class="site-name dropdown-toggle", href="/"):
-            text displayName
-            text " "
-            span(class="dropdown-arrow"): text "▾"
+          verbatim """<a class="site-name dropdown-toggle" href="#" onclick="event.preventDefault()">""" & 
+            displayName & """ <span class="dropdown-arrow">▾</span></a>"""
           tdiv(class="dropdown-menu"):
             a(class=if listName == "default": "active" else: "", href="/"):
               text "Default"
