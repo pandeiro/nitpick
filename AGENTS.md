@@ -32,6 +32,11 @@ Always run `nim check src/nitter.nim` after modifying any `.nim` files to catch 
 - Do not add comments unless explicitly requested
 - Follow existing patterns and conventions in the codebase
 
+## Git Workflow
+
+- Stage and commit changes at your discretion
+- Never push to remote without first asking the user, unless the user explicitly directs you to push
+
 ## Architecture
 
 ### Chronological Feed
