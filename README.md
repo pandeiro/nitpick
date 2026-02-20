@@ -1,7 +1,7 @@
 # Nitpick
 
 <p align="center">
-  <img src="/screenshot.png" alt="Nitpick Screenshot" width="600">
+  <img src="logo.png" alt="Nitpick Logo" width="128">
 </p>
 
 <p align="center">
