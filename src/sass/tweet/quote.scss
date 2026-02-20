@@ -19,7 +19,7 @@
   }
 
   .tweet-name-row {
-    padding: 6px 8px;
+    padding: 8px 12px;
     margin-top: 1px;
   }
 
@@ -27,21 +27,21 @@
     overflow: hidden;
     white-space: pre-wrap;
     word-wrap: break-word;
-    padding: 0px 8px 8px 8px;
+    padding: 0px 12px 10px 12px;
   }
 
   .show-thread {
-    padding: 0px 8px 6px 8px;
+    padding: 0px 12px 8px 12px;
     margin-top: -6px;
   }
 
   .quote-latest {
-    padding: 0px 8px 6px 8px;
+    padding: 0px 12px 8px 12px;
     color: var(--grey);
   }
 
   .replying-to {
-    padding: 0px 8px;
+    padding: 0px 12px;
     margin: unset;
   }
 }
