@@ -222,6 +222,10 @@
     z-index: 9999;
     align-items: center;
     justify-content: center;
+    // Creates a new stacking context to escape .profile-tab.sticky's context.
+    // Without this, the modal content gets trapped behind timeline elements
+    // when viewport height >= 900px (where .profile-tab gets position: sticky).
+    isolation: isolate;
 }
 
 .follow-modal.show {
