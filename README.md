@@ -1,75 +1,86 @@
 # Nitpick
 
-(Fork of [Nitter](https://github.com/zedeus/nitter))
+<p align="center">
+  <img src="public/logo.png" alt="Nitpick Logo" width="128">
+</p>
 
-## Rationale
+<p align="center">
+  <strong>A privacy-focused Twitter front-end with chronological feeds and follow lists</strong>
+</p>
 
-Attempts to add custom features to Nitter:
-- follow lists
-- chronological feed (parallel Twitter searches across followed users, cached in Redis)
-- etc (roadmap to come)
+<p align="center">
+  <em>Fork of <a href="https://github.com/zedeus/nitter">Nitter</a></em>
+</p>
+
+---
+
+## Features
+
+- **Chronological Feed** — Follow users and see their tweets in chronological order, not algorithmically sorted
+- **Multiple Follow Lists** — Organize followed users into custom lists, each with its own feed
+- **Pinned Tweets** — Pin tweets for quick reference
+- **No JavaScript or Ads** — Clean, fast, privacy-respecting
+- **RSS Feeds** — Subscribe to timelines via RSS
+- **Themes** — Choose your preferred look
+- **Mobile Support** — Responsive design works on all devices
+- **AGPLv3 Licensed** — No proprietary instances permitted
+
+---
 
 ## Development
 
 ### Docker-based Flow (Host Environment)
 
-**Requirements:** Host machine with Docker and docker-compose installed.
-
-**Advantages:** Run the full system (Nitpick + Redis), execute integration tests.
+**Requirements:** Docker and docker-compose.
 
 ```bash
 make dev          # Start Nitpick and Redis in the background
 make build        # Rebuild the development container
-make test         # Run integration tests (Headless - won't steal focus)
-make test-headed  # Run integration tests with a visible browser window
+make test         # Run integration tests (headless)
+make test-headed  # Run integration tests with visible browser
 make logs         # Follow application logs
 make down         # Stop the development environment
 ```
 
-The Docker environment automatically handles dependency installation, SCSS compilation, and configuration setup (`nitter.conf`).
-
-By default it exposes Nitpick on `http://localhost:7000`.
+Exposes Nitpick on `http://localhost:7000` by default.
 
 ### Mise-based Flow (Remote/Container Development)
 
-**Requirements:** [mise](https://mise.jdx.dev/) installed. Works inside containers or remote environments.
-
-**Advantages:** Lightweight, fast iteration for code changes without full Docker stack.
+**Requirements:** [mise](https://mise.jdx.dev/) installed.
 
 ```bash
-mise install                    # Install Nim and tools from mise.toml
+mise install                    # Install Nim and tools
 mise exec -- nimble install -y  # Install Nim dependencies
 mise exec -- nimble build       # Build the project
 mise exec -- nim check src/nitter.nim  # Typecheck after changes
 ```
 
-For agents working in this environment, see `AGENTS.md` for detailed setup and workflow guidelines.
+For agents working in this environment, see `AGENTS.md` for detailed guidelines.
 
 ---
 
-## Original Nitter Docs
+## Screenshot
+
+![Nitpick screenshot](/screenshot.png)
+
+---
+
+## Original Nitter Documentation
 
 > [!NOTE]
 > Running a Nitter instance now requires real accounts, since Twitter removed the previous methods. \
-> This does not affect users. \
 > For instructions on how to obtain session tokens, see [Creating session tokens](https://github.com/zedeus/nitter/wiki/Creating-session-tokens).
 
 A free and open source alternative Twitter front-end focused on privacy and
-performance. \
-Inspired by the [Invidious](https://github.com/iv-org/invidious) project.
+performance. Inspired by the [Invidious](https://github.com/iv-org/invidious) project.
 
-- No JavaScript or ads
 - All requests go through the backend, client never talks to Twitter
 - Prevents Twitter from tracking your IP or JavaScript fingerprint
 - Uses Twitter's unofficial API (no developer account required)
 - Lightweight (for [@nim_lang](https://nitter.net/nim_lang), 60KB vs 784KB from twitter.com)
-- RSS feeds
-- Themes
-- Mobile support (responsive design)
-- AGPLv3 licensed, no proprietary instances permitted
 
 <details>
-<summary>Donations</summary>
+<summary>Donations (for original Nitter project)</summary>
 Liberapay: https://liberapay.com/zedeus<br>
 Patreon: https://patreon.com/nitter<br>
 BTC: bc1qpqpzjkcpgluhzf7x9yqe7jfe8gpfm5v08mdr55<br>
@@ -79,74 +90,35 @@ SOL: ANsyGNXFo6osuFwr1YnUqif2RdoYRhc27WdyQNmmETSW<br>
 ZEC: u1vndfqtzyy6qkzhkapxelel7ams38wmfeccu3fdpy2wkuc4erxyjm8ncjhnyg747x6t0kf0faqhh2hxyplgaum08d2wnj4n7cyu9s6zhxkqw2aef4hgd4s6vh5hpqvfken98rg80kgtgn64ff70djy7s8f839z00hwhuzlcggvefhdlyszkvwy3c7yw623vw3rvar6q6evd3xcvveypt
 </details>
 
-## Roadmap
+### Why?
+
+It's impossible to use Twitter without JavaScript enabled, and as of 2024 you need to sign up. For privacy-minded folks, preventing JavaScript analytics and IP-based tracking is important. Despite being behind a VPN and using adblockers, you can still be tracked via [browser fingerprinting](https://restoreprivacy.com/browser-fingerprinting/). 
+
+Using an instance of Nitter/Nitpick (hosted on a VPS), you can browse Twitter without JavaScript while retaining your privacy. Nitter is on average around 15 times lighter than Twitter, and serves pages faster.
+
+### Resources
+
+- [List of instances](https://github.com/zedeus/nitter/wiki/Instances)
+- [Browser extensions](https://github.com/zedeus/nitter/wiki/Extensions)
+
+### Roadmap
 
 - Embeds
 - Account system with timeline support
 - Archiving tweets/profiles
 - Developer API
 
-## Resources
+### Installation
 
-The wiki contains
-[a list of instances](https://github.com/zedeus/nitter/wiki/Instances) and
-[browser extensions](https://github.com/zedeus/nitter/wiki/Extensions)
-maintained by the community.
+See the original [Nitter repository](https://github.com/zedeus/nitter) for full installation instructions.
 
-## Why?
-
-It's impossible to use Twitter without JavaScript enabled, and as of 2024 you
-need to sign up. For privacy-minded folks, preventing JavaScript analytics and
-IP-based tracking is important, but apart from using a VPN and uBlock/uMatrix,
-it's impossible. Despite being behind a VPN and using heavy-duty adblockers,
-you can get accurately tracked with your [browser's
-fingerprint](https://restoreprivacy.com/browser-fingerprinting/), [no
-JavaScript required](https://noscriptfingerprint.com/). This all became
-particularly important after Twitter [removed the
-ability](https://www.eff.org/deeplinks/2020/04/twitter-removes-privacy-option-and-shows-why-we-need-strong-privacy-laws)
-for users to control whether their data gets sent to advertisers.
-
-Using an instance of Nitter (hosted on a VPS for example), you can browse
-Twitter without JavaScript while retaining your privacy. In addition to
-respecting your privacy, Nitter is on average around 15 times lighter than
-Twitter, and in most cases serves pages faster (eg. timelines load 2-4x faster).
-
-In the future a simple account system will be added that lets you follow Twitter
-users, allowing you to have a clean chronological timeline without needing a
-Twitter account.
-
-## Screenshot
-
-![nitter](/screenshot.png)
-
-## Installation
-
-### Dependencies
-
+**Dependencies:**
 - libpcre
 - libsass
 - redis/valkey
 
-To compile Nitter you need a Nim installation, see
-[nim-lang.org](https://nim-lang.org/install.html) for details. It is possible
-to install it system-wide or in the user directory you create below.
-
-To compile the scss files, you need to install `libsass`. On Ubuntu and Debian,
-you can use `libsass-dev`.
-
-Redis is required for caching and in the future for account info. As of 2024
-Redis is no longer open source, so using the fork Valkey is recommended. It
-should be available on most distros as `redis` or `redis-server`
-(Ubuntu/Debian), or `valkey`/`valkey-server`. Running it with the default
-config is fine, Nitter's default config is set to use the default port and
-localhost.
-
-Here's how to create a `nitter` user, clone the repo, and build the project
-along with the scss and md files.
-
+**Quick start:**
 ```bash
-# useradd -m nitter
-# su nitter
 $ git clone https://github.com/zedeus/nitter
 $ cd nitter
 $ nimble build -d:danger --mm:refc
@@ -155,81 +127,8 @@ $ nimble md
 $ cp nitter.example.conf nitter.conf
 ```
 
-### Docker
+### Contact
 
-Page for the Docker image: https://hub.docker.com/r/zedeus/nitter
-
-#### NOTE: For ARM64 support, please use the separate ARM64 docker image: [`zedeus/nitter:latest-arm64`](https://hub.docker.com/r/zedeus/nitter/tags).
-
-To run Nitter with Docker, you'll need to install and run Redis separately
-before you can run the container. See below for how to also run Redis using
-Docker.
-
-To build and run Nitter in Docker:
-
-```bash
-docker build -t nitter:latest .
-docker run -v $(pwd)/nitter.conf:/src/nitter.conf -d --network host nitter:latest
-```
-
-Note: For ARM64, use this Dockerfile: [`Dockerfile.arm64`](https://github.com/zedeus/nitter/blob/master/Dockerfile.arm64).
-
-A prebuilt Docker image is provided as well:
-
-```bash
-docker run -v $(pwd)/nitter.conf:/src/nitter.conf -d --network host zedeus/nitter:latest
-```
-
-Using docker-compose to run both Nitter and Redis as different containers:
-Change `redisHost` from `localhost` to `nitter-redis` in `nitter.conf`, then run:
-
-```bash
-docker-compose up -d
-```
-
-Note the Docker commands expect a `nitter.conf` file in the directory you run
-them.
-
-### systemd
-
-To run Nitter via systemd you can use this service file:
-
-```ini
-[Unit]
-Description=Nitter (An alternative Twitter front-end)
-After=syslog.target
-After=network.target
-
-[Service]
-Type=simple
-
-# set user and group
-User=nitter
-Group=nitter
-
-# configure location
-WorkingDirectory=/home/nitter/nitter
-ExecStart=/home/nitter/nitter/nitter
-
-Restart=always
-RestartSec=15
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Then enable and run the service:
-`systemctl enable --now nitter.service`
-
-### Logging
-
-Nitter currently prints some errors to stdout, and there is no real logging
-implemented. If you're running Nitter with systemd, you can check stdout like
-this: `journalctl -u nitter.service` (add `--follow` to see just the last 15
-lines). If you're running the Docker image, you can do this:
-`docker logs --follow *nitter container id*`
-
-## Contact
-
-Feel free to join our [Matrix channel](https://matrix.to/#/#nitter:matrix.org).
-You can email me at zedeus@pm.me if you wish to contact me personally.
+Original Nitter project:
+- [Matrix channel](https://matrix.to/#/#nitter:matrix.org)
+- Email: zedeus@pm.me

@@ -12,18 +12,44 @@ proc renderStat(num: int; class: string; text=""): VNode =
     span(class="profile-stat-num"):
       text insertSep($num, ',')
 
-proc renderFollowButton*(username: string; isFollowing: bool; prefs: Prefs): VNode =
-  let
-    action = if isFollowing: "/unfollow" else: "/follow"
-    btnClass = if isFollowing: "follow-btn following" else: "follow-btn"
-    btnText = if isFollowing: "Following" else: "Follow"
-  buildHtml(form(`method`="post", action=action, class="follow-form")):
-    hiddenField("username", username)
-    hiddenField("referer", "/" & username)
-    button(`type`="submit", class=btnClass):
-      text btnText
+proc renderFollowButton*(username: string; userLists: seq[string]; 
+                         allLists: seq[string]; prefs: Prefs): VNode =
+  let isFollowing = userLists.len > 0
+  let btnClass = if isFollowing: "follow-btn following" else: "follow-btn"
+  let btnText = if isFollowing: "Following" else: "Follow"
+  
+  buildHtml(tdiv(class="follow-button-container")):
+    verbatim """<button type="button" class="$#" onclick="openFollowModal()">$#</button>""" % [btnClass, btnText & (if isFollowing and userLists.len > 1: " (" & $userLists.len & ")" else: "")]
+    
+    tdiv(id="follow-modal", class="follow-modal"):
+      tdiv(class="follow-modal-content"):
+        tdiv(class="follow-modal-header"):
+          h3: text "Add to list"
+          verbatim """<button type="button" class="close-modal" onclick="closeFollowModal()">×</button>"""
+        
+        tdiv(class="follow-modal-body"):
+          for listName in allLists:
+            let isChecked = listName in userLists
+            tdiv(class="list-checkbox-item"):
+              form(`method`="post", action=if isChecked: "/unfollow" else: "/follow", 
+                   class="list-toggle-form"):
+                hiddenField("username", username)
+                hiddenField("list", listName)
+                hiddenField("referer", "/" & username)
+                let displayName = if listName == "default": "Default" else: listName
+                if isChecked:
+                  verbatim """<label class="list-checkbox-label"><input type="checkbox" checked onchange="this.form.submit()"> $# ✓</label>""" % displayName
+                else:
+                  verbatim """<label class="list-checkbox-label"><input type="checkbox" onchange="this.form.submit()"> $#</label>""" % displayName
+          
+          tdiv(class="create-list-section"):
+            form(`method`="post", action="/lists/create", class="create-list-form"):
+              hiddenField("referer", "/" & username)
+              verbatim """<input type="text" name="name" placeholder="Create new list..." class="create-list-input" required>"""
+              button(`type`="submit", class="create-list-btn"): text "+"
 
-proc renderUserCard*(user: User; prefs: Prefs; isFollowing: bool): VNode =
+proc renderUserCard*(user: User; prefs: Prefs; userLists: seq[string]; 
+                     allLists: seq[string]): VNode =
   buildHtml(tdiv(class="profile-card")):
     tdiv(class="profile-card-info"):
       let
@@ -75,7 +101,7 @@ proc renderUserCard*(user: User; prefs: Prefs; isFollowing: bool): VNode =
           renderStat(user.followers, "followers")
           renderStat(user.likes, "likes")
 
-        renderFollowButton(user.username, isFollowing, prefs)
+        renderFollowButton(user.username, userLists, allLists, prefs)
 
 proc renderPhotoRail(profile: Profile): VNode =
   let count = insertSep($profile.user.media, ',')
@@ -113,7 +139,8 @@ proc renderProtected(username: string): VNode =
       h2: text "This account's tweets are protected."
       p: text &"Only confirmed followers have access to @{username}'s tweets."
 
-proc renderProfile*(profile: var Profile; prefs: Prefs; path: string; isFollowing: bool): VNode =
+proc renderProfile*(profile: var Profile; prefs: Prefs; path: string; 
+                    userLists: seq[string]; allLists: seq[string]): VNode =
   profile.tweets.query.fromUser = @[profile.user.username]
 
   buildHtml(tdiv(class="profile-tabs")):
@@ -123,7 +150,7 @@ proc renderProfile*(profile: var Profile; prefs: Prefs; path: string; isFollowin
 
     let sticky = if prefs.stickyProfile: " sticky" else: ""
     tdiv(class=("profile-tab" & sticky)):
-      renderUserCard(profile.user, prefs, isFollowing)
+      renderUserCard(profile.user, prefs, userLists, allLists)
       if profile.photoRail.len > 0:
         renderPhotoRail(profile)
 

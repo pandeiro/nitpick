@@ -15,18 +15,24 @@ proc renderToTop*(focus="#"): VNode =
   buildHtml(tdiv(class="top-ref")):
     icon "down", href=focus
 
-proc renderNewer*(query: Query; path: string; focus=""): VNode =
+proc renderNewer*(query: Query; path: string; focus=""; listName = "default"): VNode =
   let
     q = genQueryUrl(query)
-    url = if q.len > 0: "?" & q else: ""
+    listParam = if listName != "default": "list=" & encodeUrl(listName, usePlus=false) else: ""
+    url = if q.len > 0 and listParam.len > 0: "?" & q & listParam
+          elif q.len > 0: "?" & q
+          elif listParam.len > 0: "?" & listParam
+          else: ""
     p = if focus.len > 0: path.replace("#m", focus) else: path
   buildHtml(nav(class="timeline-item show-more")):
     a(href=(p & url)):
       text "Load newest"
 
-proc renderMore*(query: Query; cursor: string; focus=""): VNode =
+proc renderMore*(query: Query; cursor: string; focus=""; listName = "default"): VNode =
+  let
+    listParam = if listName != "default": "&list=" & encodeUrl(listName, usePlus=false) else: ""
   buildHtml(nav(class="show-more")):
-    a(href=(&"?{getQuery(query)}cursor={encodeUrl(cursor, usePlus=false)}{focus}")):
+    a(href=(&"?{getQuery(query)}cursor={encodeUrl(cursor, usePlus=false)}{listParam}{focus}")):
       text "Load more"
 
 proc renderNoMore(): VNode =
@@ -43,7 +49,6 @@ proc renderThread(thread: Tweets; prefs: Prefs; path: string): VNode =
   buildHtml(tdiv(class="thread-line")):
     let sortedThread = thread.sortedByIt(it.id)
     for i, tweet in sortedThread:
-      # thread has a gap, display "more replies" link
       if i > 0 and tweet.replyId != sortedThread[i - 1].id:
         tdiv(class="timeline-item thread more-replies-thread"):
           tdiv(class="more-replies"):
@@ -88,18 +93,19 @@ proc renderTimelineUsers*(results: Result[User]; prefs: Prefs; path=""): VNode =
     else:
       renderNoMore()
 
-proc renderFeedHeader*(results: Timeline): VNode =
+proc renderFeedHeader*(results: Timeline; listName = "default"): VNode =
+  let displayName = if listName == "default": "Default" else: listName
   buildHtml(header(class="feed-header", style={display: "none"})):
     script(type="text/javascript"):
-      text &"console.log('[feed] Showing tweets from {results.sampledCount}/{results.followingCount} followed users. Last updated: {formatTime(results.lastUpdated)}');"
+      text &"console.log('[feed:{displayName}] Showing tweets from {results.sampledCount}/{results.followingCount} followed users. Last updated: {formatTime(results.lastUpdated)}');"
 
 proc renderTimelineTweets*(results: Timeline; prefs: Prefs; path: string;
-                           pinned=none(Tweet)): VNode =
+                           pinned=none(Tweet); listName = "default"): VNode =
   buildHtml(tdiv(class="timeline")):
     if results.followingCount > 0:
-      renderFeedHeader(results)
+      renderFeedHeader(results, listName)
     if not results.beginning:
-      renderNewer(results.query, parseUri(path).path)
+      renderNewer(results.query, parseUri(path).path, listName = listName)
 
     if not prefs.hidePins and pinned.isSome:
       let tweet = get pinned
@@ -130,5 +136,5 @@ proc renderTimelineTweets*(results: Timeline; prefs: Prefs; path: string;
           renderThread(thread, prefs, path)
 
       if results.bottom.len > 0:
-        renderMore(results.query, results.bottom)
+        renderMore(results.query, results.bottom, listName = listName)
       renderToTop()

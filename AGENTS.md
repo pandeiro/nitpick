@@ -58,3 +58,30 @@ The chronological feed (`src/feed.nim`) fetches tweets from followed users via T
 **Key Types (`src/types.nim`):**
 - `SearchPoolEntry`: users + cursor for one parallel query
 - `GlobalFeed`: tweetIds + searchPool + lastUpdated
+
+### Following Lists
+
+Users can be organized into multiple following lists. Each list has its own chronological feed.
+
+**Redis Keys:**
+- `following:global` - Default list (backward compatible with original single-list)
+- `following:lists` - Set of custom list names
+- `following:list:<name>` - Set of usernames for each custom list
+- `nitpick:feed:list:<name>` - Per-list feed cache (GlobalFeed object)
+
+**Key Functions (`src/redis_cache.nim`):**
+- `getListNames()` - Returns all list names (always includes "default")
+- `getListMembers(name)` - Get usernames in a specific list
+- `getUserLists(username)` - Get all lists a user belongs to
+- `addToList(name, username)` / `removeFromList(name, username)` - Modify list membership
+- `createList(name)` / `deleteList(name)` - Manage lists
+
+**Routes (`src/routes/follow.nim`):**
+- `GET /following` - Shows all lists with members
+- `POST /follow` / `POST /unfollow` - Accept `list` parameter
+- `POST /lists/create` / `/lists/delete` - CRUD for lists
+
+**Feed Filtering:**
+- Home route `/?list=<name>` loads feed for that list
+- `fetchFeed()` in `src/feed.nim` accepts `listName` parameter
+- Each list has independent feed cache and search pool

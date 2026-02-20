@@ -14,16 +14,33 @@ const
 proc toTheme(theme: string): string =
   theme.toLowerAscii.replace(" ", "_")
 
-proc renderNavbar(cfg: Config; req: Request; rss, canonical: string): VNode =
+proc renderNavbar(cfg: Config; req: Request; rss, canonical: string; 
+                  listName = "default"; lists: seq[string] = @[]): VNode =
   var path = req.params.getOrDefault("referer")
   if path.len == 0:
     path = $(parseUri(req.path) ? filterParams(req.params))
     if "/status/" in path: path.add "#m"
 
+  let displayName = if listName == "default": cfg.title else: listName
+
   buildHtml(nav):
     tdiv(class="inner-nav"):
       tdiv(class="nav-item"):
-        a(class="site-name", href="/"): text cfg.title
+        tdiv(class="list-dropdown"):
+          a(class="site-name dropdown-toggle", href="/"):
+            text displayName
+            text " "
+            span(class="dropdown-arrow"): text "▾"
+          tdiv(class="dropdown-menu"):
+            a(class=if listName == "default": "active" else: "", href="/"):
+              text "Default"
+            for lst in lists:
+              if lst != "default":
+                a(class=if listName == lst: "active" else: "", 
+                  href=("/?list=" & encodeUrl(lst, usePlus=false))):
+                  text lst
+            a(href="/following", class="dropdown-divider"):
+              text "Manage Lists..."
 
       a(href="/"): img(class="site-logo", src=("/" & cfg.logo), alt="Logo")
 
@@ -52,7 +69,7 @@ proc renderHead*(prefs: Prefs; cfg: Config; req: Request; titleText=""; desc="";
   let opensearchUrl = getUrlPrefix(cfg) & "/opensearch"
 
   buildHtml(head):
-    link(rel="stylesheet", type="text/css", href="/css/style.css?v=27")
+    link(rel="stylesheet", type="text/css", href="/css/style.css?v=28")
     link(rel="stylesheet", type="text/css", href="/css/fontello.css?v=4")
 
     if theme.len > 0:
@@ -82,6 +99,8 @@ proc renderHead*(prefs: Prefs; cfg: Config; req: Request; titleText=""; desc="";
 
     if prefs.infiniteScroll:
       script(src="/js/infiniteScroll.js", `defer`="")
+
+    script(src="/js/followModal.js", `defer`="")
 
     title:
       if titleText.len > 0:
@@ -120,14 +139,13 @@ proc renderHead*(prefs: Prefs; cfg: Config; req: Request; titleText=""; desc="";
       meta(property="og:video:secure_url", content=video)
       meta(property="og:video:type", content="text/html")
 
-    # this is last so images are also preloaded
-    # if this is done earlier, Chrome only preloads one image for some reason
     link(rel="preload", type="font/woff2", `as`="font",
          href="/fonts/fontello.woff2?61663884", crossorigin="anonymous")
 
 proc renderMain*(body: VNode; req: Request; cfg: Config; prefs=defaultPrefs;
                  titleText=""; desc=""; ogTitle=""; rss=""; video="";
-                 images: seq[string] = @[]; banner=""): string =
+                 images: seq[string] = @[]; banner=""; 
+                 listName = "default"; lists: seq[string] = @[]): string =
 
   let twitterLink = getTwitterLink(req.path, req.params)
 
@@ -137,7 +155,7 @@ proc renderMain*(body: VNode; req: Request; cfg: Config; prefs=defaultPrefs;
 
     let bodyClass = if prefs.stickyNav: "fixed-nav" else: ""
     body(class=bodyClass):
-      renderNavbar(cfg, req, rss, twitterLink)
+      renderNavbar(cfg, req, rss, twitterLink, listName, lists)
 
       tdiv(class="container"):
         body

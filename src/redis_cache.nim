@@ -209,6 +209,13 @@ proc getCachedRss*(key: string): Future[Rss] {.async.} =
       result.cursor.setLen 0
 
 template followingKey(): string = "following:global"
+template listsKey(): string = "following:lists"
+template listKey(name: string): string = 
+  if name == "default": "following:global"
+  else: "following:list:" & name
+template listFeedKey(name: string): string =
+  if name == "default": globalFeedKey()
+  else: "nitpick:feed:list:" & name
 template pinnedIdsKey(): string = "pinned:ids"
 template pinnedTweetKey(tweetId: int64): string = "pinned:" & $tweetId
 
@@ -355,6 +362,116 @@ proc getGlobalFeedDebug*(): Future[JsonNode] {.async.} =
 proc clearGlobalFeed*() {.async.} =
   pool.withAcquire(r):
     discard await r.del(globalFeedKey())
+
+proc getListNames*(): Future[seq[string]] {.async.} =
+  pool.withAcquire(r):
+    let names = await r.sMembers(listsKey())
+    result = @["default"]
+    for n in names:
+      if n.len > 0 and n != "default":
+        result.add(n)
+
+proc createList*(name: string): Future[bool] {.async.} =
+  if name.len == 0 or name == "default": return false
+  pool.withAcquire(r):
+    discard await r.sAdd(listsKey(), name)
+    result = true
+
+proc deleteList*(name: string): Future[bool] {.async.} =
+  if name.len == 0 or name == "default": return false
+  pool.withAcquire(r):
+    discard await r.sRem(listsKey(), name)
+    discard await r.del(listKey(name))
+    discard await r.del(listFeedKey(name))
+    result = true
+
+proc renameList*(oldName, newName: string): Future[bool] {.async.} =
+  if oldName.len == 0 or newName.len == 0: return false
+  if oldName == "default" or newName == "default": return false
+  if oldName == newName: return true
+  pool.withAcquire(r):
+    let members = await r.sMembers(listKey(oldName))
+    for m in members:
+      if m.len > 0:
+        discard await r.sAdd(listKey(newName), m)
+    discard await r.sRem(listsKey(), oldName)
+    discard await r.sAdd(listsKey(), newName)
+    discard await r.del(listKey(oldName))
+    discard await r.del(listFeedKey(oldName))
+    result = true
+
+proc addToList*(name, username: string): Future[bool] {.async.} =
+  if username.len == 0: return false
+  let lname = toLower(username)
+  pool.withAcquire(r):
+    result = (await r.sAdd(listKey(name), lname)) >= 1
+
+proc removeFromList*(name, username: string): Future[bool] {.async.} =
+  if username.len == 0: return false
+  let lname = toLower(username)
+  pool.withAcquire(r):
+    result = (await r.sRem(listKey(name), lname)) >= 1
+
+proc getListMembers*(name: string): Future[seq[string]] {.async.} =
+  pool.withAcquire(r):
+    let members = await r.sMembers(listKey(name))
+    result = @[]
+    for m in members:
+      if m.len > 0:
+        result.add(m)
+
+proc isInList*(name, username: string): Future[bool] {.async.} =
+  if username.len == 0: return false
+  let lname = toLower(username)
+  pool.withAcquire(r):
+    result = await r.sIsMember(listKey(name), lname)
+
+proc getUserLists*(username: string): Future[seq[string]] {.async.} =
+  if username.len == 0: return @[]
+  let lname = toLower(username)
+  let allLists = await getListNames()
+  result = @[]
+  for listName in allLists:
+    let inList = await isInList(listName, lname)
+    if inList:
+      result.add(listName)
+
+proc getListFeed*(name: string): Future[Option[GlobalFeed]] {.async.} =
+  let data = await get(listFeedKey(name))
+  if data != redisNil and data.len > 0:
+    var feed: GlobalFeed
+    try:
+      feed = fromFlatty(uncompress(data), GlobalFeed)
+      return some(feed)
+    except:
+      echo "Decompressing list feed failed"
+  return none(GlobalFeed)
+
+proc updateListFeed*(name: string; newTweets: seq[Tweet]; 
+                     searchPool: seq[SearchPoolEntry]) {.async.} =
+  let existing = await getListFeed(name)
+  var feed: GlobalFeed
+  
+  if existing.isSome:
+    feed = existing.get()
+  
+  for t in newTweets:
+    if t.id notin feed.tweetIds:
+      feed.tweetIds.add t.id
+  
+  if feed.tweetIds.len > 0:
+    feed.tweetIds.sort(SortOrder.Descending)
+    if feed.tweetIds.len > 1000:
+      feed.tweetIds.setLen(1000)
+  
+  feed.searchPool = searchPool
+  feed.lastUpdated = getTime().toUnix()
+  
+  await setEx(listFeedKey(name), 3600, compress(toFlatty(feed)))
+
+proc clearListFeed*(name: string) {.async.} =
+  pool.withAcquire(r):
+    discard await r.del(listFeedKey(name))
 
 proc clearFollowingList*() {.async.} =
   pool.withAcquire(r):

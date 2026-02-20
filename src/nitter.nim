@@ -88,17 +88,20 @@ routes:
   get "/":
     let
       prefs = requestPrefs()
-      following = await getFollowingList()
+      listParam = @"list"
+      listName = if listParam.len > 0: listParam else: "default"
+      following = await getListMembers(listName)
       cursor = @"cursor"
+      lists = await getListNames()
     if following.len > 0:
-      let timeline = await fetchGlobalFeed(following, prefs, cursor, prefs.feedStrategy)
-      let body = renderTimelineTweets(timeline, prefs, "/")
+      let timeline = await fetchFeed(following, prefs, cursor, prefs.feedStrategy, listName)
+      let body = renderTimelineTweets(timeline, prefs, "/", listName = listName)
       if @"scroll".len > 0:
         resp $body
       else:
-        resp renderMain(body, request, cfg, prefs)
+        resp renderMain(body, request, cfg, prefs, listName = listName, lists = lists)
     else:
-      resp renderMain(renderSearch(), request, cfg, prefs)
+      resp renderMain(renderSearch(), request, cfg, prefs, listName = listName, lists = lists)
 
   get "/about":
     resp renderMain(renderAbout(), request, cfg, requestPrefs())

@@ -22,24 +22,24 @@ proc extractTweets(timeline: Timeline): seq[Tweet] =
     for t in thread:
       result.add t
 
-proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
-                     strategy = "Sampling"): Future[Timeline] {.async.} =
+proc fetchFeed*(following: seq[string]; prefs: Prefs; cursor = "";
+                strategy = "Sampling"; listName = "default"): Future[Timeline] {.async.} =
   ## Fetches a chronological feed for the given list of followed users.
   ## Implements "Sampling with Accumulation":
   ## 1. On initial load, samples up to 30 users, split into 2 parallel searches.
   ## 2. Fetches their latest tweets via Twitter search.
-  ## 3. Merges and de-duplicates results into a persistent Redis-backed global feed.
+  ## 3. Merges and de-duplicates results into a persistent Redis-backed feed.
   ## 4. For pagination (load more), iterates through all search pool entries.
   if following.len == 0:
-    info "[feed] Global feed requested but following list is empty."
+    info "[feed] Feed requested for '", listName, "' but following list is empty."
     return Timeline()
 
   if cursor.len == 0:
-    info "[feed] Initializing new global feed fetch (initial load)."
+    info "[feed] Initializing new feed fetch for '", listName, "' (initial load)."
   else:
-    info "[feed] Pagination request for global feed with cursor: ", cursor
+    info "[feed] Pagination request for '", listName, "' feed with cursor: ", cursor
 
-  let feedData = await getGlobalFeed()
+  let feedData = await getListFeed(listName)
   var searchPool: seq[SearchPoolEntry]
   
   var excludes: seq[string] = @["replies"]
@@ -57,7 +57,6 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
     info "[feed] Sampling strategy: ", strategy, " (", sampled.len, " users sampled)"
     debug "[feed] Sampled users: ", sampled.join(", ")
     
-    # Split into chunks of ChunkSize
     var i = 0
     while i < sampled.len:
       var chunk: seq[string]
@@ -91,7 +90,6 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
           searchPool.add SearchPoolEntry(users: chunk, cursor: "")
         i += ChunkSize
 
-  # Execute parallel searches (skip exhausted entries on pagination)
   var futures: seq[Future[Timeline]]
   var queries: seq[Query]
   var poolIndices: seq[int]
@@ -142,16 +140,13 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
     )
     lastBottom = searchResult.bottom
 
-  # Cache all fetched tweets
   if allTweets.len > 0:
     info "[feed] Caching ", allTweets.len, " tweets to Redis."
     await cache(allTweets)
 
-  # Update global feed in Redis
-  await updateGlobalFeed(allTweets, updatedPool)
+  await updateListFeed(listName, allTweets, updatedPool)
 
-  # Prepare final timeline from accumulated cache
-  let updatedFeed = await getGlobalFeed()
+  let updatedFeed = await getListFeed(listName)
   if updatedFeed.isSome:
     let f = updatedFeed.get()
     
@@ -172,7 +167,7 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
     for entry in f.searchPool:
       totalSampledUsers += entry.users.len
     
-    info "[feed] Feed generation complete. ", f.tweetIds.len, " total tweets in global cache. ", 
+    info "[feed] Feed generation complete. ", f.tweetIds.len, " total tweets in cache. ", 
          f.searchPool.len, " pool(s) covering ", totalSampledUsers, "/", following.len, " followed users."
     
     result = Timeline(
@@ -186,5 +181,9 @@ proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
       lastUpdated: f.lastUpdated
     )
   else:
-    error "[feed] Fatal error: Global feed cache disappeared during processing."
+    error "[feed] Fatal error: Feed cache disappeared during processing."
     result = Timeline(beginning: cursor.len == 0)
+
+proc fetchGlobalFeed*(following: seq[string]; prefs: Prefs; cursor = "";
+                      strategy = "Sampling"): Future[Timeline] {.async.} =
+  result = await fetchFeed(following, prefs, cursor, strategy, "default")

@@ -37,8 +37,6 @@ proc fetchProfile*(after: string; query: Query; skipRail=false): Future[Profile]
   elif userId == "suspended":
     return Profile(user: User(username: name, suspended: true))
 
-  # temporary fix to prevent errors from people browsing
-  # timelines during/immediately after deployment
   var after = after
   if query.kind in {posts, replies} and after.startsWith("scroll"):
     after.setLen 0
@@ -62,12 +60,10 @@ proc fetchProfile*(after: string; query: Query; skipRail=false): Future[Profile]
 
   result.tweets.query = query
   
-  # Cache all tweets in the timeline for faster access and pinning
   if result.pinned.isSome:
     await cache(result.pinned.get())
   await cacheThreads(result.tweets.content)
   
-  # Check pin status for all tweets in the timeline
   await setPinnedStatus(result.tweets.content)
 
 proc showTimeline*(request: Request; query: Query; cfg: Config; prefs: Prefs;
@@ -77,7 +73,8 @@ proc showTimeline*(request: Request; query: Query; cfg: Config; prefs: Prefs;
       timeline = await getGraphTweetSearch(query, after)
     await setPinnedStatus(timeline.content)
     let html = renderTweetSearch(timeline, prefs, getPath())
-    return renderMain(html, request, cfg, prefs, "Multi", rss=rss)
+    let lists = await getListNames()
+    return renderMain(html, request, cfg, prefs, "Multi", rss=rss, lists = lists)
 
   var profile = await fetchProfile(after, query)
   template u: untyped = profile.user
@@ -88,11 +85,12 @@ proc showTimeline*(request: Request; query: Query; cfg: Config; prefs: Prefs;
   if profile.user.id.len == 0: return
 
   let
-    isFollowing = await isFollowing(u.username)
-    pHtml = renderProfile(profile, prefs, getPath(), isFollowing)
+    userLists = await getUserLists(u.username)
+    allLists = await getListNames()
+    pHtml = renderProfile(profile, prefs, getPath(), userLists, allLists)
   result = renderMain(pHtml, request, cfg, prefs, pageTitle(u), pageDesc(u),
                       rss=rss, images = @[u.getUserPic("_400x400")],
-                      banner=u.banner)
+                      banner=u.banner, lists = allLists)
 
 template respTimeline*(timeline: typed) =
   let t = timeline
@@ -137,7 +135,6 @@ proc createTimelineRouter*(cfg: Config) =
       if names.len != 1:
         query.fromUser = names
 
-      # used for the infinite scroll feature
       if @"scroll".len > 0:
         if query.fromUser.len != 1:
           var timeline = await getGraphTweetSearch(query, after)
