@@ -1,15 +1,19 @@
 # Nitpick
 
+![Serene Hellscape of Social Media](/logo.png)
+
 <p align="center">
-  <img src="logo.png" alt="Nitpick Logo" width="128">
+  <strong>
+    A privacy-focused Twitter front-end with chronological feeds and follow lists
+    <br />
+    <em style="font-size: 0.9em;">
+      Fork of the incredible <a href="https://github.com/zedeus/nitter">Nitter</a>
+    </em>
+  </strong>
 </p>
 
 <p align="center">
-  <strong>A privacy-focused Twitter front-end with chronological feeds and follow lists</strong>
-</p>
-
-<p align="center">
-  <em>Fork of <a href="https://github.com/zedeus/nitter">Nitter</a></em>
+  
 </p>
 
 ---
