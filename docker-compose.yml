@@ -1,5 +1,5 @@
 services:
-  nitter:
+  nitpick:
     image: pandeiro/nitpick:latest
     container_name: nitpick
     ports:
@@ -8,7 +8,7 @@ services:
       - ./nitter.conf:/src/nitter.conf:Z,ro
       - ./sessions.jsonl:/src/sessions.jsonl:Z,ro # Run get_sessions.py to get the credentials
     depends_on:
-      - nitter-redis
+      - nitpick-redis
     restart: unless-stopped
     healthcheck:
       test: wget -nv --tries=1 --spider http://127.0.0.1:8080/Jack/status/20 || exit 1
@@ -24,12 +24,12 @@ services:
     cap_drop:
       - ALL
 
-  nitter-redis:
+  nitpick-redis:
     image: redis:6-alpine
-    container_name: nitter-redis
+    container_name: nitpick-redis
     command: redis-server --save 60 1 --loglevel warning
     volumes:
-      - nitter-redis:/data
+      - nitpick-redis:/data
     restart: unless-stopped
     healthcheck:
       test: redis-cli ping
@@ -44,4 +44,4 @@ services:
       - ALL
 
 volumes:
-  nitter-redis:
+  nitpick-redis:
