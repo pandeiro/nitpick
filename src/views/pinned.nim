@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 import karax/[karaxdsl, vdom]
 
-import renderutils
 import ".."/[types]
 import tweet
 
