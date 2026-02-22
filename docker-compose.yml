@@ -18,6 +18,8 @@ services:
     user: "998:998"
     labels:
       - "logging=enabled"
+    environment:
+      - REDIS_HOST=nitpick-redis
     read_only: true
     security_opt:
       - no-new-privileges:true
