@@ -30,19 +30,50 @@ Server responds with HTML (existing behavior).
 
 All existing routes gain JSON support:
 
-| Route | Description |
-|-------|-------------|
-| `GET /<username>` | User profile |
-| `GET /<username>/with_replies` | User tweets with replies |
-| `GET /<username>/media` | User media tweets |
-| `GET /` | Home feed (global) |
-| `GET /?list=<name>` | List feed |
-| `GET /following` | Following lists |
-| `GET /search?q=<query>` | Search results |
-| `GET /search?q=<query>&kind=users` | User search |
-| `GET /<username>/status/<id>` | Single tweet |
-| `GET /i/lists/<id>` | List profile |
-| `GET /pinned` | Pinned tweets |
+### Data Endpoints (High Priority)
+
+| Route | Method | Description | Priority |
+|-------|--------|-------------|----------|
+| `GET /` | GET | Home feed (global) | P0 |
+| `GET /?list=<name>` | GET | List feed | P0 |
+| `GET /<username>` | GET | User profile + timeline | P0 |
+| `GET /<username>/with_replies` | GET | User tweets with replies | P0 |
+| `GET /<username>/media` | GET | User media tweets | P0 |
+| `GET /<username>/status/<id>` | GET | Single tweet | P0 |
+| `GET /search` | GET | Search results | P1 |
+| `GET /following` | GET | Following lists | P1 |
+
+### List Management Endpoints
+
+| Route | Method | Description | Priority |
+|-------|--------|-------------|----------|
+| `GET /i/lists/<id>` | GET | List profile | P1 |
+| `GET /<username>/lists` | GET | User's lists | P2 |
+| `GET /pinned` | GET | Pinned tweets | P2 |
+
+### Action Endpoints (Write operations)
+
+| Route | Method | Description | Priority |
+|-------|--------|-------------|----------|
+| `POST /pin` | POST | Pin a tweet | P2 |
+| `POST /unpin` | POST | Unpin a tweet | P2 |
+| `POST /follow` | POST | Follow a user | P2 |
+| `POST /unfollow` | POST | Unfollow a user | P2 |
+| `POST /lists/create` | POST | Create a list | P2 |
+| `POST /lists/delete` | POST | Delete a list | P2 |
+| `POST /lists/rename` | POST | Rename a list | P2 |
+| `POST /lists/<name>/add` | POST | Add user to list | P2 |
+| `POST /lists/<name>/remove` | POST | Remove user from list | P2 |
+
+### No JSON Support Needed
+
+| Route | Reason |
+|-------|--------|
+| `GET /settings` | HTML form, user preferences |
+| `GET /about` | Static HTML page |
+| `GET /rss/*` | Already XML, different use case |
+| `GET /embed/*` | iframe content, not data |
+| `GET /.*` (debug) | Already JSON when enabled |
 
 ## Response Formats
 
@@ -245,6 +276,95 @@ X-RateLimit-Limit: 180
 X-RateLimit-Remaining: 150
 X-RateLimit-Reset: 1704067200
 ```
+
+## Implementation Roadmap & Priority
+
+Based on codebase analysis, here's the prioritized order:
+
+### Phase 1: Core Read-Only Endpoints (Highest Value)
+
+| Priority | Route | File | Complexity | Notes |
+|----------|-------|------|------------|-------|
+| P0 | `GET /` (home feed) | `nitter.nim:89-107` | Medium | Already uses `fetchFeed()`, just needs JSON wrapper |
+| P0 | `GET /<username>` | `timeline.nim:123-168` | Medium | Profile + tweets, uses `fetchProfile()` |
+| P0 | `GET /<username>/with_replies` | `timeline.nim` | Low | Same handler, different query param |
+| P0 | `GET /<username>/media` | `timeline.nim` | Low | Same handler, different query param |
+
+### Phase 2: Discovery & Search
+
+| Priority | Route | File | Complexity | Notes |
+|----------|-------|------|------------|-------|
+| P1 | `GET /search` | `search.nim:16-44` | Low | Returns `Result[User]` or `Result[Tweet]` |
+| P1 | `GET /following` | `follow.nim:14-22` | Low | Simple table lookup, returns lists |
+| P1 | `GET /i/lists/<id>` | `list.nim:36-44` | Low | List profile + tweets |
+
+### Phase 3: User Content & Actions
+
+| Priority | Route | File | Complexity | Notes |
+|----------|-------|------|------------|-------|
+| P2 | `GET /<username>/status/<id>` | `status.nim` | Medium | Single tweet + replies + conversation |
+| P2 | `GET /pinned` | `pinned.nim:53-54` | Low | Returns `seq[Tweet]` |
+| P2 | `GET /<username>/lists` | `list.nim:25-34` | Low | User's lists (redirects) |
+| P2 | `POST /follow` | `follow.nim:24-31` | Low | Action, returns redirect |
+| P2 | `POST /unfollow` | `follow.nim:33-40` | Low | Action, returns redirect |
+| P2 | `POST /pin` | `pinned.nim:56-57` | Low | Action, returns redirect |
+| P2 | `POST /unpin` | `pinned.nim:59-60` | Low | Action, returns redirect |
+
+### Phase 4: List Management
+
+| Priority | Route | File | Complexity | Notes |
+|----------|-------|------|------------|-------|
+| P3 | `POST /lists/create` | `follow.nim:42-49` | Low | Action |
+| P3 | `POST /lists/delete` | `follow.nim:51-58` | Low | Action |
+| P3 | `POST /lists/rename` | `follow.nim:60-69` | Low | Action |
+| P3 | `GET /i/lists/<id>/members` | `list.nim:46-52` | Low | List members |
+
+## Complexity Analysis
+
+### Low Complexity (1-2 hours each)
+- Routes that return simple data structures (lists, pinned tweets)
+- Actions that return redirects
+- Routes that reuse existing fetch logic with minimal transformation
+
+**Files to modify**: `follow.nim`, `pinned.nim`, `list.nim` (portions)
+
+### Medium Complexity (2-4 hours each)
+- Routes with complex data transformations
+- Routes combining multiple data sources
+- Routes requiring new serialization procs
+
+**Files to modify**: `nitter.nim`, `timeline.nim`, `search.nim`, `status.nim`
+
+## Implementation Pattern
+
+Each route handler follows this pattern:
+
+```nim
+get "/endpoint":
+  let acceptJson = req.headers.getOrDefault("accept") == "application/json"
+  
+  # Fetch data (existing logic)
+  let data = await fetchData(...)
+  
+  if acceptJson:
+    # Return JSON
+    respJson(%*{
+      "key": data.toJson()
+    })
+  else:
+    # Return HTML (existing)
+    resp renderPage(data)
+```
+
+## Estimated Total Effort
+
+| Phase | Endpoints | Hours |
+|-------|-----------|-------|
+| P0 | 4 | 8-12 |
+| P1 | 3 | 4-6 |
+| P2 | 6 | 6-10 |
+| P3 | 4 | 4-6 |
+| **Total** | **17** | **22-34** |
 
 ## Open Questions
 
