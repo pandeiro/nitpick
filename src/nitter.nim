@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import asyncdispatch, strformat, logging
+import asyncdispatch, strformat, logging, os
 from net import Port
 from htmlgen import a
-from os import getEnv
 import karax/[karaxdsl, vdom]
 
 import jester
@@ -76,6 +75,34 @@ routes:
     # skip all file URLs
     cond "." notin request.path
     applyUrlPrefs()
+
+  get "/favicon.ico":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    resp sendFile(cfg.staticDir / cfg.favicon)
+
+  get "/apple-touch-icon.png":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    resp sendFile(cfg.staticDir / cfg.favicon)
+
+  get "/favicon-32x32.png":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    resp sendFile(cfg.staticDir / cfg.favicon)
+
+  get "/favicon-16x16.png":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    resp sendFile(cfg.staticDir / cfg.favicon)
+
+  get "/android-chrome-192x192.png":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    resp sendFile(cfg.staticDir / cfg.favicon)
+
+  get "/android-chrome-384x384.png":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    resp sendFile(cfg.staticDir / cfg.favicon)
+
+  get "/android-chrome-512x512.png":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    resp sendFile(cfg.staticDir / cfg.favicon)
 
   get "/pinned":
     respPinned(cfg)
