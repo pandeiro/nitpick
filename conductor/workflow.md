@@ -151,32 +151,27 @@ Before marking any task complete, verify:
 
 ## Development Commands
 
-**CRITICAL: All development and testing MUST be performed using the Docker environment via the Makefile to ensure environment consistency.**
+### Local Development with Mise
 
-### Docker-based Workflow
 ```bash
-# Start the development environment (Nitpick + Redis)
-make dev
+# Install dependencies
+mise install
+mise exec -- nimble install -y
 
-# Rebuild the development container after dependency changes
-make build
+# Build the project
+mise exec -- nimble build
 
-# Run integration tests (Headless - won't steal focus)
-make test
-
-# Run integration tests with a visible browser window
-make test-headed
-
-# View real-time logs
-make logs
-
-# Stop the environment
-make down
-```
+# Run the server (requires Redis)
+docker run -d --name nitpick-redis redis:6-alpine
+./nitter
 ```
 
-### Local Development (Deprecated/Internal)
-The following commands are used *inside* the Docker container by `make` but should not be run directly on the host unless you have a perfectly configured Nim environment.
+### Testing
+
+```bash
+# Run pytest against local server
+pytest tests --headless
+```
 
 ## Testing Requirements
 

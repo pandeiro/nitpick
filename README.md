@@ -35,23 +35,6 @@
 
 ## Development
 
-### Docker-based Flow (Host Environment)
-
-**Requirements:** Docker and docker-compose.
-
-```bash
-make dev          # Start Nitpick and Redis in the background
-make build        # Rebuild the development container
-make test         # Run integration tests (headless)
-make test-headed  # Run integration tests with visible browser
-make logs         # Follow application logs
-make down         # Stop the development environment
-```
-
-Exposes Nitpick on `http://localhost:7000` by default.
-
-### Mise-based Flow (Remote/Container Development)
-
 **Requirements:** [mise](https://mise.jdx.dev/) installed.
 
 ```bash
@@ -62,3 +45,15 @@ mise exec -- nim check src/nitter.nim  # Typecheck after changes
 ```
 
 For agents working in this environment, see `AGENTS.md` for detailed guidelines.
+
+---
+
+## Deployment
+
+### Docker Compose
+
+```bash
+docker-compose up -d
+```
+
+Exposes Nitpick on `http://localhost:7000`.
