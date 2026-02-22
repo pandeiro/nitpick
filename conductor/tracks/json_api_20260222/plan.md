@@ -1,7 +1,7 @@
 # Implementation Plan - JSON API via Content Negotiation
 
 ## Phase 1: Core Read-Only Endpoints
-- [ ] Task: Enable JSON for Home Feed (`GET /`)
+- [~] Task: Enable JSON for Home Feed (`GET /`)
     - [ ] Write failing test: Verify `GET /` with `Accept: application/json` returns JSON structure matching `API_DESIGN.md`
     - [ ] Implement: Add content negotiation to `nitter.nim` for home feed route
     - [ ] Verify: Run tests

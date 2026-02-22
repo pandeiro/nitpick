@@ -8,6 +8,7 @@ import jester
 
 import types, config, prefs, formatters, redis_cache, http_pool, auth, apiutils, feed
 import views/[general, about, timeline]
+import json_api
 import routes/[
   preferences, timeline, status, media, search, rss, list, debug,
   unsupported, embed, resolver, router_utils, follow, pinned]
@@ -78,31 +79,31 @@ routes:
 
   get "/favicon.ico":
     cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
-    resp sendFile(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
 
   get "/apple-touch-icon.png":
     cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
-    resp sendFile(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
 
   get "/favicon-32x32.png":
     cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
-    resp sendFile(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
 
   get "/favicon-16x16.png":
     cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
-    resp sendFile(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
 
   get "/android-chrome-192x192.png":
     cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
-    resp sendFile(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
 
   get "/android-chrome-384x384.png":
     cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
-    resp sendFile(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
 
   get "/android-chrome-512x512.png":
     cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
-    resp sendFile(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
 
   get "/pinned":
     respPinned(cfg)
@@ -114,6 +115,7 @@ routes:
     respUnpin(cfg)
 
   get "/":
+    let acceptJson = request.headers.getOrDefault("accept") == "application/json"
     let
       prefs = requestPrefs()
       listParam = @"list"
@@ -123,6 +125,9 @@ routes:
       lists = await getListNames()
     if following.len > 0:
       let timeline = await fetchFeed(following, prefs, cursor, prefs.feedStrategy, listName)
+      if acceptJson:
+        resp toJson(timeline)
+
       let tweets = renderTimelineTweets(timeline, prefs, "/", listName = listName)
       let body = buildHtml(tdiv(class="timeline-container")):
         tweets
@@ -131,6 +136,9 @@ routes:
       else:
         resp renderMain(body, request, cfg, prefs, listName = listName, lists = lists)
     else:
+      if acceptJson:
+        resp emptyTimelineJson()
+
       resp renderMain(renderSearch(), request, cfg, prefs, listName = listName, lists = lists)
 
   get "/about":
