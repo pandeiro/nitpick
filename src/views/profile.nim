@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import strutils, strformat
+import strutils, strformat, options
 import karax/[karaxdsl, vdom, vstyles]
 
 import renderutils, search
@@ -157,4 +157,4 @@ proc renderProfile*(profile: var Profile; prefs: Prefs; path: string;
     if profile.user.protected:
       renderProtected(profile.user.username)
     else:
-      renderTweetSearch(profile.tweets, prefs, path, profile.pinned)
+      renderTweetSearch(profile.tweets, prefs, path, if profile.pinned != nil: some(profile.pinned) else: none(Tweet))

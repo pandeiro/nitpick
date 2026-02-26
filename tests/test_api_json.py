@@ -36,5 +36,41 @@ class TestJsonApi(unittest.TestCase):
         self.assertIn("text/html", response.headers.get("Content-Type", ""))
         self.assertIn("<html", response.text.lower())
 
+    def test_user_profile_json(self):
+        """Verify GET /<username> with Accept: application/json returns expected JSON structure."""
+        headers = {"Accept": "application/json"}
+        response = requests.get(f"{BASE_URL}/jack", headers=headers, timeout=5)
+        
+        self.assertIn("application/json", response.headers.get("Content-Type", ""), "Content-Type should be application/json")
+        data = response.json()
+
+        if response.status_code == 429:
+            self.assertIn("error", data, "Error response should contain 'error' key")
+            self.assertEqual(data["error"]["code"], "RATE_LIMITED")
+            return
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("user", data, "Profile JSON should contain 'user' key")
+        self.assertIn("username", data["user"], "User object should contain 'username'")
+        self.assertEqual(data["user"]["username"], "test")
+        
+        self.assertIn("tweets", data, "Profile JSON should contain 'tweets' key")
+        self.assertIn("preferences", data, "Profile JSON should contain 'preferences' key")
+
+    def test_user_replies_json(self):
+        """Verify GET /<username>/with_replies returns JSON."""
+        headers = {"Accept": "application/json"}
+        response = requests.get(f"{BASE_URL}/jack/with_replies", headers=headers, timeout=5)
+        
+        self.assertIn("application/json", response.headers.get("Content-Type", ""), 
+                      f"Expected application/json but got {response.headers.get('Content-Type')}")
+        data = response.json()
+        if response.status_code == 429:
+            self.assertIn("error", data)
+            self.assertEqual(data["error"]["code"], "RATE_LIMITED")
+        else:
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("tweets", data)
+
 if __name__ == "__main__":
     unittest.main()

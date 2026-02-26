@@ -9,14 +9,14 @@
     - [x] Write failing test: Verify `GET /<username>` returns JSON profile data
     - [x] Implement: Add content negotiation to `timeline.nim` for profile route
     - [x] Verify: Run tests
-- [~] Task: Enable JSON for User Replies (`GET /<username>/with_replies`)
-    - [ ] Write failing test: Verify `GET /<username>/with_replies` returns JSON
-    - [ ] Implement: Update route in `timeline.nim`
-    - [ ] Verify: Run tests
-- [ ] Task: Enable JSON for User Media (`GET /<username>/media`)
-    - [ ] Write failing test: Verify `GET /<username>/media` returns JSON
-    - [ ] Implement: Update route in `timeline.nim`
-    - [ ] Verify: Run tests
+- [x] Task: Enable JSON for User Replies (`GET /<username>/with_replies`) (63d2bee)
+    - [x] Write failing test: Verify `GET /<username>/with_replies` returns JSON
+    - [x] Implement: Update route in `timeline.nim`
+    - [x] Verify: Run tests
+- [x] Task: Enable JSON for User Media (`GET /<username>/media`) (63d2bee)
+    - [x] Write failing test: Verify `GET /<username>/media` returns JSON
+    - [x] Implement: Update route in `timeline.nim`
+    - [x] Verify: Run tests
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Core Read-Only Endpoints' (Protocol in workflow.md)
 
 ## Phase 2: Discovery & Search
