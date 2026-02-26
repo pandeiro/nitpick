@@ -72,6 +72,41 @@ settings:
   reusePort = true
 
 routes:
+  error InternalError:
+    let acceptJson = request.headers.getOrDefault("accept") == "application/json"
+    if acceptJson:
+      respJson(errorJson("INTERNAL_ERROR", "An internal error occurred."), Http500)
+    echo error.exc.name, ": ", error.exc.msg
+    const link = a("open a GitHub issue", href = issuesUrl)
+    resp Http500, showError(
+      &"An error occurred, please {link} with the URL you tried to visit.", cfg)
+
+  error BadClientError:
+    let acceptJson = request.headers.getOrDefault("accept") == "application/json"
+    if acceptJson:
+      respJson(errorJson("BAD_CLIENT", "Network error occurred."), Http500)
+    echo error.exc.name, ": ", error.exc.msg
+    resp Http500, showError("Network error occurred, please try again.", cfg)
+
+  error RateLimitError:
+    let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
+                     request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+    if acceptJson:
+      respJson(errorJson("RATE_LIMITED", "Instance has been rate limited."), Http429)
+    const link = a("another instance", href = instancesUrl)
+    resp Http429, showError(
+      &"Instance has been rate limited.<br>Use {link} or try again later.", cfg)
+
+  error NoSessionsError:
+    echo "Request Headers: ", request.headers
+    let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
+                     request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+    if acceptJson:
+      respJson(errorJson("RATE_LIMITED", "Instance has no auth tokens, or is fully rate limited."), Http429)
+    const link = a("another instance", href = instancesUrl)
+    resp Http429, showError(
+      &"Instance has no auth tokens, or is fully rate limited.<br>Use {link} or try again later.", cfg)
+
   before:
     # skip all file URLs
     cond "." notin request.path
@@ -157,26 +192,6 @@ routes:
 
   error Http404:
     resp Http404, showError("Page not found", cfg)
-
-  error InternalError:
-    echo error.exc.name, ": ", error.exc.msg
-    const link = a("open a GitHub issue", href = issuesUrl)
-    resp Http500, showError(
-      &"An error occurred, please {link} with the URL you tried to visit.", cfg)
-
-  error BadClientError:
-    echo error.exc.name, ": ", error.exc.msg
-    resp Http500, showError("Network error occurred, please try again.", cfg)
-
-  error RateLimitError:
-    const link = a("another instance", href = instancesUrl)
-    resp Http429, showError(
-      &"Instance has been rate limited.<br>Use {link} or try again later.", cfg)
-
-  error NoSessionsError:
-    const link = a("another instance", href = instancesUrl)
-    resp Http429, showError(
-      &"Instance has no auth tokens, or is fully rate limited.<br>Use {link} or try again later.", cfg)
 
   extend rss, ""
   extend status, ""

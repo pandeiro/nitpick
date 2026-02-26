@@ -58,5 +58,5 @@ template applyUrlPrefs*() {.dirty.} =
     else:
       redirect(request.path)
 
-template respJson*(node: JsonNode) =
-  resp $node, "application/json"
+template respJson*(node: JsonNode; status: HttpCode = Http200) =
+  resp status, $node, "application/json"

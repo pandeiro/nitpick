@@ -24,6 +24,18 @@ proc toJson*(user: User): JsonNode =
 
 proc toJson*(tweet: Tweet): JsonNode
 
+proc toJson*(photo: GalleryPhoto): JsonNode =
+  %*{
+    "url": photo.url,
+    "tweet_id": photo.tweetId,
+    "color": photo.color
+  }
+
+proc toJson*(rail: PhotoRail): JsonNode =
+  result = newJArray()
+  for p in rail:
+    result.add p.toJson()
+
 proc toJson*(tweets: seq[Tweet]): JsonNode =
   result = newJArray()
   for t in tweets:
@@ -94,5 +106,25 @@ proc toJson*(timeline: Timeline): JsonNode =
       "following_count": timeline.followingCount,
       "result_count": allTweets.len,
       "last_updated": timeline.lastUpdated
+    }
+  }
+
+proc toJson*(profile: Profile; prefs: Prefs): JsonNode =
+  %*{
+    "user": profile.user.toJson(),
+    "tweets": profile.tweets.toJson(),
+    "photo_rail": profile.photoRail.toJson(),
+    "preferences": {
+      "theme": prefs.theme,
+      "replace_twitter": prefs.replaceTwitter,
+      "replace_youtube": prefs.replaceYouTube
+    }
+  }
+
+proc errorJson*(code, message: string): JsonNode =
+  %*{
+    "error": {
+      "code": code,
+      "message": message
     }
   }
