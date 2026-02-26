@@ -63,7 +63,19 @@ proc toJson*(tweet: Tweet): JsonNode =
     result["media"] = media
 
 proc emptyTimelineJson*(): JsonNode =
-  %*{"tweets": [], "meta": {"result_count": 0}}
+  %*{
+    "tweets": [],
+    "pagination": {
+      "next_cursor": "",
+      "previous_cursor": ""
+    },
+    "meta": {
+      "sampled_count": 0,
+      "following_count": 0,
+      "result_count": 0,
+      "last_updated": 0
+    }
+  }
 
 proc toJson*(timeline: Timeline): JsonNode =
   var allTweets: seq[Tweet] = @[]
@@ -73,7 +85,13 @@ proc toJson*(timeline: Timeline): JsonNode =
 
   %*{
     "tweets": toJson(allTweets),
+    "pagination": {
+      "next_cursor": timeline.bottom,
+      "previous_cursor": timeline.top
+    },
     "meta": {
+      "sampled_count": timeline.sampledCount,
+      "following_count": timeline.followingCount,
       "result_count": allTweets.len,
       "last_updated": timeline.lastUpdated
     }

@@ -126,7 +126,7 @@ routes:
     if following.len > 0:
       let timeline = await fetchFeed(following, prefs, cursor, prefs.feedStrategy, listName)
       if acceptJson:
-        resp toJson(timeline)
+        respJson toJson(timeline)
 
       let tweets = renderTimelineTweets(timeline, prefs, "/", listName = listName)
       let body = buildHtml(tdiv(class="timeline-container")):
@@ -137,7 +137,7 @@ routes:
         resp renderMain(body, request, cfg, prefs, listName = listName, lists = lists)
     else:
       if acceptJson:
-        resp emptyTimelineJson()
+        respJson emptyTimelineJson()
 
       resp renderMain(renderSearch(), request, cfg, prefs, listName = listName, lists = lists)
 
