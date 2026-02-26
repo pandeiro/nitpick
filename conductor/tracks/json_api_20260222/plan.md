@@ -5,11 +5,11 @@
     - [x] Write failing test: Verify `GET /` with `Accept: application/json` returns JSON structure matching `API_DESIGN.md`
     - [x] Implement: Add content negotiation to `nitter.nim` for home feed route
     - [x] Verify: Run tests
-- [~] Task: Enable JSON for User Profile (`GET /<username>`)
-    - [ ] Write failing test: Verify `GET /<username>` returns JSON profile data
-    - [ ] Implement: Add content negotiation to `timeline.nim` for profile route
-    - [ ] Verify: Run tests
-- [ ] Task: Enable JSON for User Replies (`GET /<username>/with_replies`)
+- [x] Task: Enable JSON for User Profile (`GET /<username>`) (d04530a)
+    - [x] Write failing test: Verify `GET /<username>` returns JSON profile data
+    - [x] Implement: Add content negotiation to `timeline.nim` for profile route
+    - [x] Verify: Run tests
+- [~] Task: Enable JSON for User Replies (`GET /<username>/with_replies`)
     - [ ] Write failing test: Verify `GET /<username>/with_replies` returns JSON
     - [ ] Implement: Update route in `timeline.nim`
     - [ ] Verify: Run tests
