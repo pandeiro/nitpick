@@ -108,6 +108,43 @@ routes:
       &"Instance has no auth tokens, or is fully rate limited.<br>Use {link} or try again later.", cfg)
 
   before:
+    let acceptJson = request.headers.getOrDefault("accept") == "application/json"
+    if acceptJson:
+      let path = request.path
+      if path == "/":
+        let
+          prefs = requestPrefs()
+          listParam = @"list"
+          listName = if listParam.len > 0: listParam else: "default"
+          following = await getListMembers(listName)
+          cursor = @"cursor"
+        if following.len > 0:
+          let timeline = await fetchFeed(following, prefs, cursor, prefs.feedStrategy, listName)
+          respJson toJson(timeline)
+        else:
+          respJson emptyTimelineJson()
+      
+      if path.startsWith("/@") or (path.len > 1 and path[1] != 'i' and '/' notin path[1..^1]):
+        let 
+          name = if path.startsWith("/@"): path[2..^1] else: path[1..^1]
+          tab = @"tab"
+          prefs = requestPrefs()
+          after = getCursor()
+        
+        var query = getQuery(request, tab, name)
+        try:
+          let profile = await fetchProfile(after, query)
+          if profile.user.id.len == 0:
+            respJson(errorJson("NOT_FOUND", "User not found"), Http404)
+          respJson(toJson(profile, prefs))
+        except RateLimitError:
+          respJson(errorJson("RATE_LIMITED", "Instance has been rate limited."), Http429)
+        except NoSessionsError:
+          respJson(errorJson("RATE_LIMITED", "Instance has no auth tokens, or is fully rate limited."), Http429)
+        except:
+          let e = getCurrentException()
+          respJson(errorJson("UNKNOWN_ERROR", e.name & ": " & e.msg), Http500)
+
     # skip all file URLs
     cond "." notin request.path
     applyUrlPrefs()
@@ -193,10 +230,10 @@ routes:
   error Http404:
     resp Http404, showError("Page not found", cfg)
 
+  extend timeline, ""
   extend rss, ""
   extend status, ""
   extend search, ""
-  extend timeline, ""
   extend media, ""
   extend list, ""
   extend preferences, ""

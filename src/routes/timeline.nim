@@ -121,32 +121,6 @@ proc createTimelineRouter*(cfg: Config) =
       redirect("/" & username)
 
     get "/@name/?@tab?/?":
-      let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                       request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
-      if acceptJson:
-        let
-          prefs = requestPrefs()
-          after = getCursor()
-          names = getNames(@"name")
-        var query = request.getQuery(@"tab", @"name")
-        try:
-          if names.len != 1:
-            query.fromUser = names
-            let timeline = await getGraphTweetSearch(query, after)
-            respJson(toJson(timeline))
-          else:
-            let profile = await fetchProfile(after, query)
-            if profile.user.id.len == 0:
-              respJson(errorJson("NOT_FOUND", "User not found"), Http404)
-            respJson(toJson(profile, prefs))
-        except RateLimitError:
-          respJson(errorJson("RATE_LIMITED", "Instance has been rate limited."), Http429)
-        except NoSessionsError:
-          respJson(errorJson("RATE_LIMITED", "Instance has no auth tokens, or is fully rate limited."), Http429)
-        except:
-          let e = getCurrentException()
-          respJson(errorJson("UNKNOWN_ERROR", e.name & ": " & e.msg), Http500)
-
       cond request.reqMethod == HttpGet
       cond '.' notin @"name"
       cond @"name" notin ["pic", "gif", "video", "search", "settings", "login", "intent", "i", "following", "pinned", "pin", "unpin"]
