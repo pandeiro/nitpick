@@ -24,7 +24,7 @@
     - [x] Write failing test: Verify `GET /search` returns JSON results
     - [x] Implement: Update `search.nim`
     - [x] Verify: Run tests
-- [x] Task: Enable JSON for Following Lists (`GET /following`)
+- [x] Task: Enable JSON for Following Lists (`GET /following`) (e452c7f)
     - [x] Write failing test: Verify `GET /following` returns JSON list structure
     - [x] Implement: Update `follow.nim`
     - [x] Verify: Run tests
