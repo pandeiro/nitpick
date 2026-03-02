@@ -51,10 +51,10 @@
     - [x] Write failing test: Verify POST actions return JSON response/redirect
     - [x] Implement: Update `follow.nim`
     - [x] Verify: Run tests
-- [ ] Task: Enable JSON for Pin Actions (`POST /pin`, `POST /unpin`)
-    - [ ] Write failing test: Verify POST actions return JSON response/redirect
-    - [ ] Implement: Update `pinned.nim`
-    - [ ] Verify: Run tests
+- [ ] Task: Enable JSON for Pin Actions (`POST /pin`, `POST /unpin`) (e477c1f)
+    - [x] Write failing test: Verify POST actions return JSON response/redirect
+    - [x] Implement: Update `pinned.nim`
+    - [x] Verify: Run tests
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: User Content & Actions' (Protocol in workflow.md)
 
 ## Phase 4: List Management
