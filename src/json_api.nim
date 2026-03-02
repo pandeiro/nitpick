@@ -226,3 +226,11 @@ proc toJson*(list: List; members: Result[User]): JsonNode =
     },
     "members": membersJson
   }
+
+proc actionResponseJson*(success: bool; action, username, listName: string): JsonNode =
+  return %*{
+    "success": success,
+    "action": action,
+    "username": username,
+    "list": listName
+  }

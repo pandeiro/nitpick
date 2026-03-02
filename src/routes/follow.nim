@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import asyncdispatch, strutils, tables
+import asyncdispatch, strutils, tables, json
 
 import jester
 
@@ -33,18 +33,40 @@ proc createFollowRouter*(cfg: Config) =
         username = @"username"
         listName = if @"list".len > 0: @"list" else: "default"
       if username.len == 0:
-        resp Http400, showError("Missing username", cfg)
-      discard await addToList(listName, username)
-      redirect(refPath())
+        let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
+                         request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+        if acceptJson:
+          respJson(errorJson("BAD_REQUEST", "Missing username"), Http400)
+        else:
+          resp Http400, showError("Missing username", cfg)
+      else:
+        discard await addToList(listName, username)
+        let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
+                         request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+        if acceptJson:
+          respJson(actionResponseJson(true, "follow", username, listName))
+        else:
+          redirect(refPath())
 
     post "/unfollow":
       let
         username = @"username"
         listName = if @"list".len > 0: @"list" else: "default"
       if username.len == 0:
-        resp Http400, showError("Missing username", cfg)
-      discard await removeFromList(listName, username)
-      redirect(refPath())
+        let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
+                         request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+        if acceptJson:
+          respJson(errorJson("BAD_REQUEST", "Missing username"), Http400)
+        else:
+          resp Http400, showError("Missing username", cfg)
+      else:
+        discard await removeFromList(listName, username)
+        let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
+                         request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+        if acceptJson:
+          respJson(actionResponseJson(true, "unfollow", username, listName))
+        else:
+          redirect(refPath())
 
     post "/lists/create":
       let name = @"name"

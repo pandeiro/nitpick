@@ -229,6 +229,62 @@ class TestJsonApi(unittest.TestCase):
         self.assertIn("lists", data, "User lists JSON should contain 'lists' key")
         self.assertIn("username", data, "User lists JSON should contain 'username' key")
 
+    def test_follow_action_json(self):
+        """Verify POST /follow returns JSON when Accept: application/json is sent."""
+        headers = {"Accept": "application/json"}
+        response = requests.post(
+            f"{BASE_URL}/follow",
+            headers=headers,
+            data={"username": "testuser"},
+            timeout=5,
+        )
+
+        self.assertIn(
+            "application/json",
+            response.headers.get("Content-Type", ""),
+            f"Expected application/json but got {response.headers.get('Content-Type')}",
+        )
+
+        data = response.json()
+
+        if response.status_code == 429:
+            self.assertIn("error", data)
+            self.assertEqual(data["error"]["code"], "RATE_LIMITED")
+            return
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "success", data, "Follow action JSON should contain 'success' key"
+        )
+
+    def test_unfollow_action_json(self):
+        """Verify POST /unfollow returns JSON when Accept: application/json is sent."""
+        headers = {"Accept": "application/json"}
+        response = requests.post(
+            f"{BASE_URL}/unfollow",
+            headers=headers,
+            data={"username": "testuser"},
+            timeout=5,
+        )
+
+        self.assertIn(
+            "application/json",
+            response.headers.get("Content-Type", ""),
+            f"Expected application/json but got {response.headers.get('Content-Type')}",
+        )
+
+        data = response.json()
+
+        if response.status_code == 429:
+            self.assertIn("error", data)
+            self.assertEqual(data["error"]["code"], "RATE_LIMITED")
+            return
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "success", data, "Unfollow action JSON should contain 'success' key"
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
