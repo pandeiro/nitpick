@@ -197,3 +197,11 @@ proc toJson*(conv: Conversation): JsonNode =
     },
     "replies": repliesArr
   }
+
+proc pinnedTweetsJson*(pinnedTweets: seq[Tweet]): JsonNode =
+  var tweetsArray = newJArray()
+  for tweet in pinnedTweets:
+    tweetsArray.add(toJson(tweet))
+  return %*{
+    "pinned_tweets": tweetsArray
+  }

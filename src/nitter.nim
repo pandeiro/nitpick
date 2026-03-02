@@ -178,7 +178,13 @@ routes:
     sendFile(cfg.staticDir / cfg.favicon)
 
   get "/pinned":
-    respPinned(cfg)
+    let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
+                     request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+    if acceptJson:
+      let pinnedTweets = await getPinnedTweets()
+      respJson(pinnedTweetsJson(pinnedTweets))
+    else:
+      respPinned(cfg)
 
   post "/pin":
     respPin(cfg)

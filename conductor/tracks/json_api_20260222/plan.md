@@ -39,10 +39,10 @@
     - [x] Write failing test: Verify `GET /<username>/status/<id>` returns JSON tweet details
     - [x] Implement: Update `status.nim`
     - [x] Verify: Run tests
-- [ ] Task: Enable JSON for Pinned Tweets (`GET /pinned`)
-    - [ ] Write failing test: Verify `GET /pinned` returns JSON
-    - [ ] Implement: Update `pinned.nim`
-    - [ ] Verify: Run tests
+- [x] Task: Enable JSON for Pinned Tweets (`GET /pinned`)
+    - [x] Write failing test: Verify `GET /pinned` returns JSON
+    - [x] Implement: Update `pinned.nim`
+    - [x] Verify: Run tests
 - [ ] Task: Enable JSON for User Lists (`GET /<username>/lists`)
     - [ ] Write failing test: Verify `GET /<username>/lists` returns JSON
     - [ ] Implement: Update `list.nim`
