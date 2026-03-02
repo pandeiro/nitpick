@@ -28,7 +28,7 @@
     - [x] Write failing test: Verify `GET /following` returns JSON list structure
     - [x] Implement: Update `follow.nim`
     - [x] Verify: Run tests
-- [x] Task: Enable JSON for List Profile (`GET /i/lists/<id>`)
+- [x] Task: Enable JSON for List Profile (`GET /i/lists/<id>`) (dddd668)
     - [x] Write failing test: Verify `GET /i/lists/<id>` returns JSON
     - [x] Implement: Update `list.nim`
     - [x] Verify: Run tests
