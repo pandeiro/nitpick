@@ -285,6 +285,58 @@ class TestJsonApi(unittest.TestCase):
             "success", data, "Unfollow action JSON should contain 'success' key"
         )
 
+    def test_pin_action_json(self):
+        """Verify POST /pin returns JSON when Accept: application/json is sent."""
+        headers = {"Accept": "application/json"}
+        response = requests.post(
+            f"{BASE_URL}/pin",
+            headers=headers,
+            data={"tweetId": "1234567890"},
+            timeout=5,
+        )
+
+        self.assertIn(
+            "application/json",
+            response.headers.get("Content-Type", ""),
+            f"Expected application/json but got {response.headers.get('Content-Type')}",
+        )
+
+        data = response.json()
+
+        if response.status_code == 429:
+            self.assertIn("error", data)
+            self.assertEqual(data["error"]["code"], "RATE_LIMITED")
+            return
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("success", data, "Pin action JSON should contain 'success' key")
+
+    def test_unpin_action_json(self):
+        """Verify POST /unpin returns JSON when Accept: application/json is sent."""
+        headers = {"Accept": "application/json"}
+        response = requests.post(
+            f"{BASE_URL}/unpin",
+            headers=headers,
+            data={"tweetId": "1234567890"},
+            timeout=5,
+        )
+
+        self.assertIn(
+            "application/json",
+            response.headers.get("Content-Type", ""),
+            f"Expected application/json but got {response.headers.get('Content-Type')}",
+        )
+
+        data = response.json()
+
+        if response.status_code == 429:
+            self.assertIn("error", data)
+            self.assertEqual(data["error"]["code"], "RATE_LIMITED")
+            return
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("success", data, "Unpin action JSON should contain 'success' key")
+
 
 if __name__ == "__main__":
     unittest.main()
