@@ -4,7 +4,7 @@ import strutils, strformat, uri
 import jester
 
 import router_utils
-import ".."/[types, redis_cache, api]
+import ".."/[types, redis_cache, api, json_api]
 import ../views/[general, timeline, list]
 
 template respList*(list, timeline, title, vnode: typed) =
@@ -40,8 +40,18 @@ proc createListRouter*(cfg: Config) =
         list = await getCachedList(id=(@"id"))
         timeline = await getGraphListTweets(list.id, getCursor())
       await setPinnedStatus(timeline.content)
-      let vnode = renderTimelineTweets(timeline, prefs, request.path)
-      respList(list, timeline, list.title, vnode)
+      
+      let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
+                       request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+      
+      if acceptJson:
+        if list.id.len == 0 or list.name.len == 0:
+          respJson(errorJson("NOT_FOUND", &"List '{@\"id\"}' not found"), Http404)
+        else:
+          respJson(toJson(list, timeline))
+      else:
+        let vnode = renderTimelineTweets(timeline, prefs, request.path)
+        respList(list, timeline, list.title, vnode)
 
     get "/i/lists/@id/members":
       cond '.' notin @"id"

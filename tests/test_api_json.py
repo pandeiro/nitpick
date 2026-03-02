@@ -130,6 +130,32 @@ class TestJsonApi(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("lists", data, "Following JSON should contain 'lists' key")
 
+    def test_list_profile_json(self):
+        """Verify GET /i/lists/<id> returns JSON when Accept: application/json is sent."""
+        headers = {"Accept": "application/json"}
+        response = requests.get(
+            f"{BASE_URL}/i/lists/123456", headers=headers, timeout=5
+        )
+
+        self.assertIn(
+            "application/json",
+            response.headers.get("Content-Type", ""),
+            f"Expected application/json but got {response.headers.get('Content-Type')}",
+        )
+
+        data = response.json()
+
+        if response.status_code == 429:
+            self.assertIn("error", data)
+            self.assertEqual(data["error"]["code"], "RATE_LIMITED")
+            return
+
+        if response.status_code == 404:
+            return
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("list", data, "List profile JSON should contain 'list' key")
+
 
 if __name__ == "__main__":
     unittest.main()

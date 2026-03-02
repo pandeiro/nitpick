@@ -162,3 +162,15 @@ proc toJson*(listNames: seq[string]; listsData: Table[string, seq[string]]): Jso
     "lists": lists,
     "all_members": allMembers
   }
+
+proc toJson*(list: List; timeline: Timeline): JsonNode =
+  %*{
+    "list": {
+      "id": list.id,
+      "name": list.name,
+      "description": list.description,
+      "members": list.members,
+      "username": list.username
+    },
+    "timeline": toJson(timeline)
+  }

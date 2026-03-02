@@ -28,10 +28,10 @@
     - [x] Write failing test: Verify `GET /following` returns JSON list structure
     - [x] Implement: Update `follow.nim`
     - [x] Verify: Run tests
-- [ ] Task: Enable JSON for List Profile (`GET /i/lists/<id>`)
-    - [ ] Write failing test: Verify `GET /i/lists/<id>` returns JSON
-    - [ ] Implement: Update `list.nim`
-    - [ ] Verify: Run tests
+- [x] Task: Enable JSON for List Profile (`GET /i/lists/<id>`)
+    - [x] Write failing test: Verify `GET /i/lists/<id>` returns JSON
+    - [x] Implement: Update `list.nim`
+    - [x] Verify: Run tests
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Discovery & Search' (Protocol in workflow.md)
 
 ## Phase 3: User Content & Actions
