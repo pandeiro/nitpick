@@ -47,10 +47,10 @@
     - [x] Write failing test: Verify `GET /<username>/lists` returns JSON
     - [x] Implement: Update `list.nim`
     - [x] Verify: Run tests
-- [ ] Task: Enable JSON for Follow Actions (`POST /follow`, `POST /unfollow`)
-    - [ ] Write failing test: Verify POST actions return JSON response/redirect
-    - [ ] Implement: Update `follow.nim`
-    - [ ] Verify: Run tests
+- [ ] Task: Enable JSON for Follow Actions (`POST /follow`, `POST /unfollow`) (a0f7dd5)
+    - [x] Write failing test: Verify POST actions return JSON response/redirect
+    - [x] Implement: Update `follow.nim`
+    - [x] Verify: Run tests
 - [ ] Task: Enable JSON for Pin Actions (`POST /pin`, `POST /unpin`)
     - [ ] Write failing test: Verify POST actions return JSON response/redirect
     - [ ] Implement: Update `pinned.nim`
