@@ -20,10 +20,10 @@
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Core Read-Only Endpoints' (Protocol in workflow.md)
 
 ## Phase 2: Discovery & Search
-- [ ] Task: Enable JSON for Search (`GET /search`)
-    - [ ] Write failing test: Verify `GET /search` returns JSON results
-    - [ ] Implement: Update `search.nim`
-    - [ ] Verify: Run tests
+- [x] Task: Enable JSON for Search (`GET /search`) (b51354b)
+    - [x] Write failing test: Verify `GET /search` returns JSON results
+    - [x] Implement: Update `search.nim`
+    - [x] Verify: Run tests
 - [ ] Task: Enable JSON for Following Lists (`GET /following`)
     - [ ] Write failing test: Verify `GET /following` returns JSON list structure
     - [ ] Implement: Update `follow.nim`
