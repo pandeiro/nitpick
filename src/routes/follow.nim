@@ -4,7 +4,7 @@ import asyncdispatch, strutils, tables
 import jester
 
 import router_utils
-import ".."/[types, redis_cache]
+import ".."/[types, redis_cache, json_api]
 import ../views/[general, following]
 
 export following
@@ -18,8 +18,15 @@ proc createFollowRouter*(cfg: Config) =
       var listsData = initTable[string, seq[string]]()
       for name in listNames:
         listsData[name] = await getListMembers(name)
-      let html = renderFollowing(listNames, listsData)
-      resp renderMain(html, request, cfg, prefs, "Following", lists = listNames)
+      
+      let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
+                       request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+      
+      if acceptJson:
+        respJson(toJson(listNames, listsData))
+      else:
+        let html = renderFollowing(listNames, listsData)
+        resp renderMain(html, request, cfg, prefs, "Following", lists = listNames)
 
     post "/follow":
       let

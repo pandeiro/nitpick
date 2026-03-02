@@ -24,10 +24,10 @@
     - [x] Write failing test: Verify `GET /search` returns JSON results
     - [x] Implement: Update `search.nim`
     - [x] Verify: Run tests
-- [ ] Task: Enable JSON for Following Lists (`GET /following`)
-    - [ ] Write failing test: Verify `GET /following` returns JSON list structure
-    - [ ] Implement: Update `follow.nim`
-    - [ ] Verify: Run tests
+- [x] Task: Enable JSON for Following Lists (`GET /following`)
+    - [x] Write failing test: Verify `GET /following` returns JSON list structure
+    - [x] Implement: Update `follow.nim`
+    - [x] Verify: Run tests
 - [ ] Task: Enable JSON for List Profile (`GET /i/lists/<id>`)
     - [ ] Write failing test: Verify `GET /i/lists/<id>` returns JSON
     - [ ] Implement: Update `list.nim`

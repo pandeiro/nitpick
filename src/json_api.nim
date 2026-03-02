@@ -1,4 +1,4 @@
-import json, options, times, sequtils
+import json, options, times, sequtils, tables
 import types
 
 proc toJson*(user: User): JsonNode =
@@ -139,4 +139,26 @@ proc toJson*(results: Result[User]): JsonNode =
     "pagination": {
       "next_cursor": results.bottom
     }
+  }
+
+proc toJson*(listNames: seq[string]; listsData: Table[string, seq[string]]): JsonNode =
+  var lists: JsonNode = newJArray()
+  for name in listNames:
+    var members: JsonNode = newJArray()
+    for member in listsData[name]:
+      members.add(%member)
+    lists.add(%*{
+      "name": name,
+      "members": members
+    })
+  var allMembersSet = initTable[string, bool]()
+  for name in listNames:
+    for member in listsData[name]:
+      allMembersSet[member] = true
+  var allMembers: JsonNode = newJArray()
+  for member in allMembersSet.keys:
+    allMembers.add(%member)
+  %*{
+    "lists": lists,
+    "all_members": allMembers
   }
