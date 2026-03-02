@@ -27,3 +27,17 @@ proc renderList*(body: VNode; query: Query; list: List): VNode =
 
     renderListTabs(query, &"/i/lists/{list.id}")
     body
+
+proc renderUserLists*(username: string; lists: seq[string]): VNode =
+  buildHtml(tdiv(class="timeline-container")):
+    tdiv(class="timeline-header"):
+      text &"Lists for @{username}"
+    if lists.len == 0:
+      tdiv(class="timeline-description"):
+        text "No lists found"
+    else:
+      ul(class="list-members"):
+        for listName in lists:
+          li:
+            a(href=("/i/lists/" & listName)):
+              text listName

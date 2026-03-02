@@ -198,10 +198,31 @@ proc toJson*(conv: Conversation): JsonNode =
     "replies": repliesArr
   }
 
+proc toJson*(username: string; listNames: seq[string]): JsonNode =
+  %*{
+    "username": username,
+    "lists": listNames
+  }
+
 proc pinnedTweetsJson*(pinnedTweets: seq[Tweet]): JsonNode =
   var tweetsArray = newJArray()
   for tweet in pinnedTweets:
     tweetsArray.add(toJson(tweet))
   return %*{
     "pinned_tweets": tweetsArray
+  }
+
+proc toJson*(list: List; members: Result[User]): JsonNode =
+  var membersJson = newJArray()
+  for user in members.content:
+    membersJson.add(toJson(user))
+  return %*{
+    "list": {
+      "id": list.id,
+      "name": list.name,
+      "description": list.description,
+      "members": list.members,
+      "username": list.username
+    },
+    "members": membersJson
   }
