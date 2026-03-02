@@ -174,3 +174,26 @@ proc toJson*(list: List; timeline: Timeline): JsonNode =
     },
     "timeline": toJson(timeline)
   }
+
+proc toJson*(conv: Conversation): JsonNode =
+  var beforeArr = newJArray()
+  for tweet in conv.before.content:
+    beforeArr.add(toJson(tweet))
+  
+  var afterArr = newJArray()
+  for tweet in conv.after.content:
+    afterArr.add(toJson(tweet))
+  
+  var repliesArr = newJArray()
+  for chain in conv.replies.content:
+    for tweet in chain.content:
+      repliesArr.add(toJson(tweet))
+  
+  %*{
+    "tweet": toJson(conv.tweet),
+    "conversation": {
+      "before": beforeArr,
+      "after": afterArr
+    },
+    "replies": repliesArr
+  }

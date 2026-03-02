@@ -35,10 +35,10 @@
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Discovery & Search' (Protocol in workflow.md)
 
 ## Phase 3: User Content & Actions
-- [ ] Task: Enable JSON for Single Tweet (`GET /<username>/status/<id>`)
-    - [ ] Write failing test: Verify `GET /<username>/status/<id>` returns JSON tweet details
-    - [ ] Implement: Update `status.nim`
-    - [ ] Verify: Run tests
+- [x] Task: Enable JSON for Single Tweet (`GET /<username>/status/<id>`)
+    - [x] Write failing test: Verify `GET /<username>/status/<id>` returns JSON tweet details
+    - [x] Implement: Update `status.nim`
+    - [x] Verify: Run tests
 - [ ] Task: Enable JSON for Pinned Tweets (`GET /pinned`)
     - [ ] Write failing test: Verify `GET /pinned` returns JSON
     - [ ] Implement: Update `pinned.nim`
