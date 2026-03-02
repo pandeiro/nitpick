@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 import strutils, sequtils, uri, tables, json
-from jester import Request, cookies
+from jester import Request, cookies, Http200, HttpCode
 
 import ../views/general
 import ".."/[utils, prefs, types]

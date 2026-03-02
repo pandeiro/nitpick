@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import strutils, uri
+import strutils, uri, json
 
 import jester
 
 import router_utils
-import ".."/[query, types, api, formatters, redis_cache]
+import ".."/[query, types, api, formatters, redis_cache, json_api]
 import ../views/[general, search]
 
 include "../views/opensearch.nimf"
@@ -16,12 +16,18 @@ proc createSearchRouter*(cfg: Config) =
     get "/search/?":
       let q = @"q"
       if q.len > 500:
+        let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
+                         request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+        if acceptJson:
+          respJson(errorJson("BAD_REQUEST", "Search input too long."), Http400)
         resp Http400, showError("Search input too long.", cfg)
 
       let
         prefs = requestPrefs()
         query = initQuery(params(request))
         title = "Search" & (if q.len > 0: " (" & q & ")" else: "")
+        acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
+                     request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
 
       case query.kind
       of users:
@@ -32,15 +38,25 @@ proc createSearchRouter*(cfg: Config) =
           users = await getGraphUserSearch(query, getCursor())
         except InternalError:
           users = Result[User](beginning: true, query: query)
-        resp renderMain(renderUserSearch(users, prefs), request, cfg, prefs, title)
+        
+        if acceptJson:
+          respJson(toJson(users))
+        else:
+          resp renderMain(renderUserSearch(users, prefs), request, cfg, prefs, title)
       of tweets:
         let
           tweets = await getGraphTweetSearch(query, getCursor())
           rss = if cfg.enableRSSSearch: "/search/rss?" & genQueryUrl(query) else: ""
         await setPinnedStatus(tweets.content)
-        resp renderMain(renderTweetSearch(tweets, prefs, getPath()),
-                        request, cfg, prefs, title, rss=rss)
+        
+        if acceptJson:
+          respJson(toJson(tweets))
+        else:
+          resp renderMain(renderTweetSearch(tweets, prefs, getPath()),
+                          request, cfg, prefs, title, rss=rss)
       else:
+        if acceptJson:
+          respJson(errorJson("INVALID_REQUEST", "Invalid search"), Http404)
         resp Http404, showError("Invalid search", cfg)
 
     get "/hashtag/@hash":

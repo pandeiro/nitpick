@@ -143,7 +143,7 @@ routes:
           respJson(errorJson("RATE_LIMITED", "Instance has no auth tokens, or is fully rate limited."), Http429)
         except:
           let e = getCurrentException()
-          respJson(errorJson("UNKNOWN_ERROR", e.name & ": " & e.msg), Http500)
+          respJson(errorJson("UNKNOWN_ERROR", $e.name & ": " & e.msg), Http500)
 
     # skip all file URLs
     cond "." notin request.path

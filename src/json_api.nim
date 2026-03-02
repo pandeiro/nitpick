@@ -128,3 +128,15 @@ proc errorJson*(code, message: string): JsonNode =
       "message": message
     }
   }
+
+proc toJson*(results: Result[User]): JsonNode =
+  var usersArray = newJArray()
+  for user in results.content:
+    usersArray.add(toJson(user))
+  %*{
+    "tweets": [],
+    "users": usersArray,
+    "pagination": {
+      "next_cursor": results.bottom
+    }
+  }
