@@ -1,5 +1,7 @@
 import json, options, times, sequtils, tables
-import types
+import karax/vdom
+import types, prefs
+import views/tweet
 
 proc toJson*(user: User): JsonNode =
   %*{
@@ -24,6 +26,44 @@ proc toJson*(user: User): JsonNode =
 
 proc toJson*(tweet: Tweet): JsonNode
 
+proc renderTweetHtml*(tweet: Tweet; prefs: Prefs): string =
+  let vnode = renderTweet(tweet, prefs, "")
+  result = $vnode
+
+proc toJson*(tweet: Tweet; prefs: Prefs): JsonNode =
+  result = %*{
+    "id": $tweet.id,
+    "text": tweet.text,
+    "html": renderTweetHtml(tweet, prefs),
+    "author": tweet.user.toJson(),
+    "created_at": $tweet.time,
+    "reply_count": tweet.stats.replies,
+    "retweet_count": tweet.stats.retweets,
+    "like_count": tweet.stats.likes,
+    "view_count": tweet.stats.views,
+    "pinned": tweet.pinned
+  }
+  
+  if tweet.retweet.isSome:
+    result["retweeted"] = %true
+  else:
+    result["retweeted"] = %false
+
+  var media = newJArray()
+  for p in tweet.photos:
+    media.add %*{"type": "photo", "url": p.url}
+  
+  if tweet.video.isSome:
+    let v = tweet.video.get
+    media.add %*{"type": "video", "url": v.url, "thumb": v.thumb}
+
+  if tweet.gif.isSome:
+    let g = tweet.gif.get
+    media.add %*{"type": "gif", "url": g.url, "thumb": g.thumb}
+  
+  if media.len > 0:
+    result["media"] = media
+
 proc toJson*(photo: GalleryPhoto): JsonNode =
   %*{
     "url": photo.url,
@@ -45,6 +85,7 @@ proc toJson*(tweet: Tweet): JsonNode =
   result = %*{
     "id": $tweet.id,
     "text": tweet.text,
+    "html": renderTweetHtml(tweet, defaultPrefs),
     "author": tweet.user.toJson(),
     "created_at": $tweet.time,
     "reply_count": tweet.stats.replies,
