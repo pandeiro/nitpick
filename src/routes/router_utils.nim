@@ -60,3 +60,13 @@ template applyUrlPrefs*() {.dirty.} =
 
 template respJson*(node: JsonNode; status: HttpCode = Http200) =
   resp status, $node, "application/json"
+
+template acceptJson*(): bool =
+  request.headers.getOrDefault("accept") == "application/json" or
+  request.headers.getOrDefault("Accept") == "application/json"
+
+template respondWith*(json, html: untyped) =
+  if acceptJson():
+    json
+  else:
+    html

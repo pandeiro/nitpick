@@ -49,16 +49,14 @@ proc createStatusRouter*(cfg: Config) =
         if conv != nil and conv.tweet != nil and conv.tweet.tombstone.len > 0:
           error = conv.tweet.tombstone
         
-        let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                         request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+        let acceptJson = acceptJson()
         if acceptJson:
           respJson(errorJson("NOT_FOUND", error), Http404)
         resp Http404, showError(error, cfg)
 
       await setConversationPinStatus(conv)
 
-      let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                       request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+      let acceptJson = acceptJson()
 
       if acceptJson:
         respJson(toJson(conv))

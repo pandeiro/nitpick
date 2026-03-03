@@ -46,8 +46,7 @@ proc createListRouter*(cfg: Config) =
         userLists = await getUserLists(username)
         pageTitle = &"@{username}/lists"
 
-      let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                       request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+      let acceptJson = acceptJson()
 
       if acceptJson:
         respJson(toJson(username, userLists))
@@ -85,8 +84,7 @@ proc createListRouter*(cfg: Config) =
         timeline = await getGraphListTweets(list.id, getCursor())
       await setPinnedStatus(timeline.content)
       
-      let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                       request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+      let acceptJson = acceptJson()
       
       if acceptJson:
         if list.id.len == 0 or list.name.len == 0:
@@ -104,8 +102,7 @@ proc createListRouter*(cfg: Config) =
         list = await getCachedList(id=(@"id"))
         members = await getGraphListMembers(list, getCursor())
 
-      let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                       request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+      let acceptJson = acceptJson()
 
       if acceptJson:
         if list.id.len == 0 or list.name.len == 0:

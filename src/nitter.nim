@@ -73,7 +73,7 @@ settings:
 
 routes:
   error InternalError:
-    let acceptJson = request.headers.getOrDefault("accept") == "application/json"
+    let acceptJson = acceptJson()
     if acceptJson:
       respJson(errorJson("INTERNAL_ERROR", "An internal error occurred."), Http500)
     echo error.exc.name, ": ", error.exc.msg
@@ -82,15 +82,14 @@ routes:
       &"An error occurred, please {link} with the URL you tried to visit.", cfg)
 
   error BadClientError:
-    let acceptJson = request.headers.getOrDefault("accept") == "application/json"
+    let acceptJson = acceptJson()
     if acceptJson:
       respJson(errorJson("BAD_CLIENT", "Network error occurred."), Http500)
     echo error.exc.name, ": ", error.exc.msg
     resp Http500, showError("Network error occurred, please try again.", cfg)
 
   error RateLimitError:
-    let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                     request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+    let acceptJson = acceptJson()
     if acceptJson:
       respJson(errorJson("RATE_LIMITED", "Instance has been rate limited."), Http429)
     const link = a("another instance", href = instancesUrl)
@@ -99,8 +98,7 @@ routes:
 
   error NoSessionsError:
     echo "Request Headers: ", request.headers
-    let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                     request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+    let acceptJson = acceptJson()
     if acceptJson:
       respJson(errorJson("RATE_LIMITED", "Instance has no auth tokens, or is fully rate limited."), Http429)
     const link = a("another instance", href = instancesUrl)
@@ -108,7 +106,7 @@ routes:
       &"Instance has no auth tokens, or is fully rate limited.<br>Use {link} or try again later.", cfg)
 
   before:
-    let acceptJson = request.headers.getOrDefault("accept") == "application/json"
+    let acceptJson = acceptJson()
     if acceptJson:
       let path = request.path
       if path == "/":
@@ -178,8 +176,7 @@ routes:
     sendFile(cfg.staticDir / cfg.favicon)
 
   get "/pinned":
-    let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                     request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+    let acceptJson = acceptJson()
     if acceptJson:
       let pinnedTweets = await getPinnedTweets()
       respJson(pinnedTweetsJson(pinnedTweets))
@@ -188,8 +185,7 @@ routes:
 
   post "/pin":
     let tweetIdStr = @"tweetId"
-    let acceptJson = request.headers.getOrDefault("accept") == "application/json" or
-                     request.headers.getOrDefault("Accept") == "application/json"
+    let acceptJson = acceptJson()
     if tweetIdStr.len == 0:
       if acceptJson:
         respJson(errorJson("BAD_REQUEST", "Missing tweet ID"), Http400)
@@ -225,8 +221,7 @@ routes:
 
   post "/unpin":
     let tweetIdStr = @"tweetId"
-    let acceptJson = request.headers.getOrDefault("accept") == "application/json" or
-                     request.headers.getOrDefault("Accept") == "application/json"
+    let acceptJson = acceptJson()
     if tweetIdStr.len == 0:
       if acceptJson:
         respJson(errorJson("BAD_REQUEST", "Missing tweet ID"), Http400)
@@ -248,7 +243,7 @@ routes:
         redirect(refPath())
 
   get "/":
-    let acceptJson = request.headers.getOrDefault("accept") == "application/json"
+    let acceptJson = acceptJson()
     let
       prefs = requestPrefs()
       listParam = @"list"

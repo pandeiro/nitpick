@@ -55,8 +55,7 @@ proc createPinnedRouter*(cfg: Config) =
 
     post "/pin":
       let tweetIdStr = @"tweetId"
-      let acceptJson = request.headers.getOrDefault("accept") == "application/json" or
-                       request.headers.getOrDefault("Accept") == "application/json"
+      let acceptJson = acceptJson()
       if tweetIdStr.len == 0:
         if acceptJson:
           respJson(errorJson("BAD_REQUEST", "Missing tweet ID"), Http400)
@@ -92,8 +91,7 @@ proc createPinnedRouter*(cfg: Config) =
 
     post "/unpin":
       let tweetIdStr = @"tweetId"
-      let acceptJson = request.headers.getOrDefault("accept") == "application/json" or
-                       request.headers.getOrDefault("Accept") == "application/json"
+      let acceptJson = acceptJson()
       if tweetIdStr.len == 0:
         if acceptJson:
           respJson(errorJson("BAD_REQUEST", "Missing tweet ID"), Http400)

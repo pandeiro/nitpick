@@ -16,8 +16,7 @@ proc createSearchRouter*(cfg: Config) =
     get "/search/?":
       let q = @"q"
       if q.len > 500:
-        let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                         request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+        let acceptJson = acceptJson()
         if acceptJson:
           respJson(errorJson("BAD_REQUEST", "Search input too long."), Http400)
         resp Http400, showError("Search input too long.", cfg)
@@ -26,8 +25,7 @@ proc createSearchRouter*(cfg: Config) =
         prefs = requestPrefs()
         query = initQuery(params(request))
         title = "Search" & (if q.len > 0: " (" & q & ")" else: "")
-        acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                     request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+        acceptJson = acceptJson()
 
       case query.kind
       of users:

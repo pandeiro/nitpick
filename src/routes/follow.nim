@@ -19,8 +19,7 @@ proc createFollowRouter*(cfg: Config) =
       for name in listNames:
         listsData[name] = await getListMembers(name)
       
-      let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                       request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+      let acceptJson = acceptJson()
       
       if acceptJson:
         respJson(toJson(listNames, listsData))
@@ -33,16 +32,14 @@ proc createFollowRouter*(cfg: Config) =
         username = @"username"
         listName = if @"list".len > 0: @"list" else: "default"
       if username.len == 0:
-        let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                         request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+        let acceptJson = acceptJson()
         if acceptJson:
           respJson(errorJson("BAD_REQUEST", "Missing username"), Http400)
         else:
           resp Http400, showError("Missing username", cfg)
       else:
         discard await addToList(listName, username)
-        let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                         request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+        let acceptJson = acceptJson()
         if acceptJson:
           respJson(actionResponseJson(true, "follow", username, listName))
         else:
@@ -53,16 +50,14 @@ proc createFollowRouter*(cfg: Config) =
         username = @"username"
         listName = if @"list".len > 0: @"list" else: "default"
       if username.len == 0:
-        let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                         request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+        let acceptJson = acceptJson()
         if acceptJson:
           respJson(errorJson("BAD_REQUEST", "Missing username"), Http400)
         else:
           resp Http400, showError("Missing username", cfg)
       else:
         discard await removeFromList(listName, username)
-        let acceptJson = request.headers.hasKey("accept") and request.headers["accept"] == "application/json" or
-                         request.headers.hasKey("Accept") and request.headers["Accept"] == "application/json"
+        let acceptJson = acceptJson()
         if acceptJson:
           respJson(actionResponseJson(true, "unfollow", username, listName))
         else:
@@ -70,8 +65,7 @@ proc createFollowRouter*(cfg: Config) =
 
     post "/lists/create":
       let name = @"name"
-      let acceptJson = request.headers.getOrDefault("accept") == "application/json" or
-                       request.headers.getOrDefault("Accept") == "application/json"
+      let acceptJson = acceptJson()
       if name.len == 0:
         if acceptJson:
           respJson(errorJson("BAD_REQUEST", "Missing list name"), Http400)
@@ -92,8 +86,7 @@ proc createFollowRouter*(cfg: Config) =
 
     post "/lists/delete":
       let name = @"name"
-      let acceptJson = request.headers.getOrDefault("accept") == "application/json" or
-                       request.headers.getOrDefault("Accept") == "application/json"
+      let acceptJson = acceptJson()
       if name.len == 0:
         if acceptJson:
           respJson(errorJson("BAD_REQUEST", "Missing list name"), Http400)
@@ -116,8 +109,7 @@ proc createFollowRouter*(cfg: Config) =
       let
         oldName = @"old_name"
         newName = @"new_name"
-      let acceptJson = request.headers.getOrDefault("accept") == "application/json" or
-                       request.headers.getOrDefault("Accept") == "application/json"
+      let acceptJson = acceptJson()
       if oldName.len == 0 or newName.len == 0:
         if acceptJson:
           respJson(errorJson("BAD_REQUEST", "Missing list name"), Http400)
