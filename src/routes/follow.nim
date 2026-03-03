@@ -70,29 +70,68 @@ proc createFollowRouter*(cfg: Config) =
 
     post "/lists/create":
       let name = @"name"
+      let acceptJson = request.headers.getOrDefault("accept") == "application/json" or
+                       request.headers.getOrDefault("Accept") == "application/json"
       if name.len == 0:
-        resp Http400, showError("Missing list name", cfg)
+        if acceptJson:
+          respJson(errorJson("BAD_REQUEST", "Missing list name"), Http400)
+        else:
+          resp Http400, showError("Missing list name", cfg)
+        return
       if name == "default":
-        resp Http400, showError("Cannot create list named 'default'", cfg)
+        if acceptJson:
+          respJson(errorJson("BAD_REQUEST", "Cannot create list named 'default'"), Http400)
+        else:
+          resp Http400, showError("Cannot create list named 'default'", cfg)
+        return
       discard await createList(name)
-      redirect("/following")
+      if acceptJson:
+        respJson(actionResponseJson(true, "create_list", name, ""))
+      else:
+        redirect("/following")
 
     post "/lists/delete":
       let name = @"name"
+      let acceptJson = request.headers.getOrDefault("accept") == "application/json" or
+                       request.headers.getOrDefault("Accept") == "application/json"
       if name.len == 0:
-        resp Http400, showError("Missing list name", cfg)
+        if acceptJson:
+          respJson(errorJson("BAD_REQUEST", "Missing list name"), Http400)
+        else:
+          resp Http400, showError("Missing list name", cfg)
+        return
       if name == "default":
-        resp Http400, showError("Cannot delete default list", cfg)
+        if acceptJson:
+          respJson(errorJson("BAD_REQUEST", "Cannot delete default list"), Http400)
+        else:
+          resp Http400, showError("Cannot delete default list", cfg)
+        return
       discard await deleteList(name)
-      redirect("/following")
+      if acceptJson:
+        respJson(actionResponseJson(true, "delete_list", name, ""))
+      else:
+        redirect("/following")
 
     post "/lists/rename":
       let
         oldName = @"old_name"
         newName = @"new_name"
+      let acceptJson = request.headers.getOrDefault("accept") == "application/json" or
+                       request.headers.getOrDefault("Accept") == "application/json"
       if oldName.len == 0 or newName.len == 0:
-        resp Http400, showError("Missing list name", cfg)
+        if acceptJson:
+          respJson(errorJson("BAD_REQUEST", "Missing list name"), Http400)
+        else:
+          resp Http400, showError("Missing list name", cfg)
+        return
       if oldName == "default" or newName == "default":
-        resp Http400, showError("Cannot rename default list", cfg)
+        if acceptJson:
+          respJson(errorJson("BAD_REQUEST", "Cannot rename default list"), Http400)
+        else:
+          resp Http400, showError("Cannot rename default list", cfg)
+        return
       discard await renameList(oldName, newName)
-      redirect("/following")
+      if acceptJson:
+        respJson(actionResponseJson(true, "rename_list", oldName, newName))
+      else:
+        redirect("/following")

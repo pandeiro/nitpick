@@ -285,6 +285,90 @@ class TestJsonApi(unittest.TestCase):
             "success", data, "Unfollow action JSON should contain 'success' key"
         )
 
+    def test_list_create_action_json(self):
+        """Verify POST /lists/create returns JSON when Accept: application/json is sent."""
+        headers = {"Accept": "application/json"}
+        response = requests.post(
+            f"{BASE_URL}/lists/create",
+            headers=headers,
+            data={"name": "testlist"},
+            timeout=5,
+        )
+
+        self.assertIn(
+            "application/json",
+            response.headers.get("Content-Type", ""),
+            f"Expected application/json but got {response.headers.get('Content-Type')}",
+        )
+
+        data = response.json()
+
+        if response.status_code == 429:
+            self.assertIn("error", data)
+            self.assertEqual(data["error"]["code"], "RATE_LIMITED")
+            return
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "success", data, "List create action JSON should contain 'success' key"
+        )
+
+    def test_list_delete_action_json(self):
+        """Verify POST /lists/delete returns JSON when Accept: application/json is sent."""
+        headers = {"Accept": "application/json"}
+        response = requests.post(
+            f"{BASE_URL}/lists/delete",
+            headers=headers,
+            data={"name": "testlist"},
+            timeout=5,
+        )
+
+        self.assertIn(
+            "application/json",
+            response.headers.get("Content-Type", ""),
+            f"Expected application/json but got {response.headers.get('Content-Type')}",
+        )
+
+        data = response.json()
+
+        if response.status_code == 429:
+            self.assertIn("error", data)
+            self.assertEqual(data["error"]["code"], "RATE_LIMITED")
+            return
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "success", data, "List delete action JSON should contain 'success' key"
+        )
+
+    def test_list_rename_action_json(self):
+        """Verify POST /lists/rename returns JSON when Accept: application/json is sent."""
+        headers = {"Accept": "application/json"}
+        response = requests.post(
+            f"{BASE_URL}/lists/rename",
+            headers=headers,
+            data={"old_name": "oldlist", "new_name": "newlist"},
+            timeout=5,
+        )
+
+        self.assertIn(
+            "application/json",
+            response.headers.get("Content-Type", ""),
+            f"Expected application/json but got {response.headers.get('Content-Type')}",
+        )
+
+        data = response.json()
+
+        if response.status_code == 429:
+            self.assertIn("error", data)
+            self.assertEqual(data["error"]["code"], "RATE_LIMITED")
+            return
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "success", data, "List rename action JSON should contain 'success' key"
+        )
+
     def test_pin_action_json(self):
         """Verify POST /pin returns JSON when Accept: application/json is sent."""
         headers = {"Accept": "application/json"}
@@ -336,6 +420,33 @@ class TestJsonApi(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("success", data, "Unpin action JSON should contain 'success' key")
+
+    def test_list_members_json(self):
+        """Verify GET /i/lists/<id>/members returns JSON when Accept: application/json is sent."""
+        headers = {"Accept": "application/json"}
+        response = requests.get(
+            f"{BASE_URL}/i/lists/123456/members", headers=headers, timeout=5
+        )
+
+        self.assertIn(
+            "application/json",
+            response.headers.get("Content-Type", ""),
+            f"Expected application/json but got {response.headers.get('Content-Type')}",
+        )
+
+        data = response.json()
+
+        if response.status_code == 429:
+            self.assertIn("error", data)
+            self.assertEqual(data["error"]["code"], "RATE_LIMITED")
+            return
+
+        if response.status_code == 404:
+            return
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("list", data, "List members JSON should contain 'list' key")
+        self.assertIn("members", data, "List members JSON should contain 'members' key")
 
 
 if __name__ == "__main__":
