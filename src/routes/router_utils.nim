@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 import strutils, sequtils, uri, tables, json
-from jester import Request, cookies
+from jester import Request, cookies, Http200, HttpCode
 
 import ../views/general
 import ".."/[utils, prefs, types]
@@ -58,5 +58,15 @@ template applyUrlPrefs*() {.dirty.} =
     else:
       redirect(request.path)
 
-template respJson*(node: JsonNode) =
-  resp $node, "application/json"
+template respJson*(node: JsonNode; status: HttpCode = Http200) =
+  resp status, $node, "application/json"
+
+template acceptJson*(): bool =
+  request.headers.getOrDefault("accept") == "application/json" or
+  request.headers.getOrDefault("Accept") == "application/json"
+
+template respondWith*(json, html: untyped) =
+  if acceptJson():
+    json
+  else:
+    html

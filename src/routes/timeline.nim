@@ -60,8 +60,8 @@ proc fetchProfile*(after: string; query: Query; skipRail=false): Future[Profile]
 
   result.tweets.query = query
   
-  if result.pinned.isSome:
-    await cache(result.pinned.get())
+  if result.pinned != nil:
+    await cache(result.pinned)
   await cacheThreads(result.tweets.content)
   
   await setPinnedStatus(result.tweets.content)
@@ -132,6 +132,7 @@ proc createTimelineRouter*(cfg: Config) =
         names = getNames(@"name")
 
       var query = request.getQuery(@"tab", @"name")
+
       if names.len != 1:
         query.fromUser = names
 

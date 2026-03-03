@@ -4,7 +4,7 @@ import asyncdispatch, strutils, sequtils, uri, options, sugar
 import jester, karax/vdom
 
 import router_utils
-import ".."/[types, formatters, api, redis_cache]
+import ".."/[types, formatters, api, redis_cache, json_api]
 import ../views/[general, status]
 
 export uri, sequtils, options, sugar
@@ -48,35 +48,44 @@ proc createStatusRouter*(cfg: Config) =
         var error = "Tweet not found"
         if conv != nil and conv.tweet != nil and conv.tweet.tombstone.len > 0:
           error = conv.tweet.tombstone
+        
+        let acceptJson = acceptJson()
+        if acceptJson:
+          respJson(errorJson("NOT_FOUND", error), Http404)
         resp Http404, showError(error, cfg)
 
       await setConversationPinStatus(conv)
 
-      let
-        title = pageTitle(conv.tweet)
-        ogTitle = pageTitle(conv.tweet.user)
-        desc = conv.tweet.text
+      let acceptJson = acceptJson()
 
-      var
-        images = conv.tweet.photos.mapIt(it.url)
-        video = ""
+      if acceptJson:
+        respJson(toJson(conv))
+      else:
+        let
+          title = pageTitle(conv.tweet)
+          ogTitle = pageTitle(conv.tweet.user)
+          desc = conv.tweet.text
 
-      if conv.tweet.video.isSome():
-        images = @[get(conv.tweet.video).thumb]
-        video = getVideoEmbed(cfg, conv.tweet.id)
-      elif conv.tweet.gif.isSome():
-        images = @[get(conv.tweet.gif).thumb]
-        video = getPicUrl(get(conv.tweet.gif).url)
-      elif conv.tweet.card.isSome():
-        let card = conv.tweet.card.get()
-        if card.image.len > 0:
-          images = @[card.image]
-        elif card.video.isSome():
-          images = @[card.video.get().thumb]
+        var
+          images = conv.tweet.photos.mapIt(it.url)
+          video = ""
 
-      let html = renderConversation(conv, prefs, getPath() & "#m")
-      resp renderMain(html, request, cfg, prefs, title, desc, ogTitle,
-                      images=images, video=video)
+        if conv.tweet.video.isSome():
+          images = @[get(conv.tweet.video).thumb]
+          video = getVideoEmbed(cfg, conv.tweet.id)
+        elif conv.tweet.gif.isSome():
+          images = @[get(conv.tweet.gif).thumb]
+          video = getPicUrl(get(conv.tweet.gif).url)
+        elif conv.tweet.card.isSome():
+          let card = conv.tweet.card.get()
+          if card.image.len > 0:
+            images = @[card.image]
+          elif card.video.isSome():
+            images = @[card.video.get().thumb]
+
+        let html = renderConversation(conv, prefs, getPath() & "#m")
+        resp renderMain(html, request, cfg, prefs, title, desc, ogTitle,
+                        images=images, video=video)
 
     get "/@name/status/@id/history/?":
       cond '.' notin @"name"

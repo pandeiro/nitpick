@@ -4,7 +4,7 @@ import asyncdispatch, strutils, logging
 import jester, karax/vdom
 
 import router_utils
-import ".."/[types, redis_cache]
+import ".."/[types, redis_cache, json_api]
 import ../views/[general, pinned]
 
 export pinned
@@ -54,7 +54,60 @@ proc createPinnedRouter*(cfg: Config) =
       respPinned(cfg)
 
     post "/pin":
-      respPin(cfg)
+      let tweetIdStr = @"tweetId"
+      let acceptJson = acceptJson()
+      if tweetIdStr.len == 0:
+        if acceptJson:
+          respJson(errorJson("BAD_REQUEST", "Missing tweet ID"), Http400)
+        else:
+          resp Http400, showError("Missing tweet ID", cfg)
+        return
+      
+      try:
+        let tweetId = parseBiggestInt(tweetIdStr)
+        let tweet = await getCachedTweet(tweetId)
+        if tweet != nil and tweet.id != 0:
+          if tweet.user.username.len > 0:
+            await cacheUserId(tweet.user.username, tweet.user.id)
+            await cache(tweet.user)
+          discard await addPinnedTweet(tweet)
+          info "pinned tweet: ", tweetId
+          if acceptJson:
+            respJson(actionResponseJson(true, "pin", tweetIdStr, ""))
+          else:
+            redirect("/pinned")
+        else:
+          warn "failed to pin tweet (not found): ", tweetId
+          if acceptJson:
+            respJson(actionResponseJson(false, "pin", tweetIdStr, ""))
+          else:
+            redirect("/pinned")
+      except:
+        warn "failed to pin tweet: ", tweetIdStr, " error: ", getCurrentExceptionMsg()
+        if acceptJson:
+          respJson(actionResponseJson(false, "pin", tweetIdStr, ""))
+        else:
+          redirect("/pinned")
 
     post "/unpin":
-      respUnpin(cfg)
+      let tweetIdStr = @"tweetId"
+      let acceptJson = acceptJson()
+      if tweetIdStr.len == 0:
+        if acceptJson:
+          respJson(errorJson("BAD_REQUEST", "Missing tweet ID"), Http400)
+        else:
+          resp Http400, showError("Missing tweet ID", cfg)
+        return
+      
+      try:
+        let tweetId = parseBiggestInt(tweetIdStr)
+        discard await removePinnedTweet(tweetId)
+        if acceptJson:
+          respJson(actionResponseJson(true, "unpin", tweetIdStr, ""))
+        else:
+          redirect(refPath())
+      except:
+        if acceptJson:
+          respJson(actionResponseJson(false, "unpin", tweetIdStr, ""))
+        else:
+          redirect(refPath())

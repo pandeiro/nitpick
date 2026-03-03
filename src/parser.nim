@@ -597,7 +597,7 @@ proc parseGraphTimeline*(js: JsonNode; after=""): Profile =
         if tweets.len > 0:
           var tweet = tweets[0]
           tweet.pinned = true
-          result.pinned = some tweet
+          result.pinned = tweet
 
 proc parseGraphPhotoRail*(js: JsonNode): PhotoRail =
   result = @[]

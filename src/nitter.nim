@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import asyncdispatch, strformat, logging
+import asyncdispatch, strformat, logging, os
 from net import Port
 from htmlgen import a
-from os import getEnv
 import karax/[karaxdsl, vdom]
 
 import jester
 
 import types, config, prefs, formatters, redis_cache, http_pool, auth, apiutils, feed
 import views/[general, about, timeline]
+import json_api
 import routes/[
   preferences, timeline, status, media, search, rss, list, debug,
   unsupported, embed, resolver, router_utils, follow, pinned]
@@ -72,21 +72,111 @@ settings:
   reusePort = true
 
 routes:
+  error InternalError:
+    let acceptJson = acceptJson()
+    if acceptJson:
+      respJson(errorJson("INTERNAL_ERROR", "An internal error occurred."), Http500)
+    echo error.exc.name, ": ", error.exc.msg
+    const link = a("open a GitHub issue", href = issuesUrl)
+    resp Http500, showError(
+      &"An error occurred, please {link} with the URL you tried to visit.", cfg)
+
+  error BadClientError:
+    let acceptJson = acceptJson()
+    if acceptJson:
+      respJson(errorJson("BAD_CLIENT", "Network error occurred."), Http500)
+    echo error.exc.name, ": ", error.exc.msg
+    resp Http500, showError("Network error occurred, please try again.", cfg)
+
+  error RateLimitError:
+    let acceptJson = acceptJson()
+    if acceptJson:
+      respJson(errorJson("RATE_LIMITED", "Instance has been rate limited."), Http429)
+    const link = a("another instance", href = instancesUrl)
+    resp Http429, showError(
+      &"Instance has been rate limited.<br>Use {link} or try again later.", cfg)
+
+  error NoSessionsError:
+    echo "Request Headers: ", request.headers
+    let acceptJson = acceptJson()
+    if acceptJson:
+      respJson(errorJson("RATE_LIMITED", "Instance has no auth tokens, or is fully rate limited."), Http429)
+    const link = a("another instance", href = instancesUrl)
+    resp Http429, showError(
+      &"Instance has no auth tokens, or is fully rate limited.<br>Use {link} or try again later.", cfg)
+
   before:
+    let acceptJson = acceptJson()
+    if acceptJson:
+      let path = request.path
+      if path == "/":
+        let
+          prefs = requestPrefs()
+          listParam = @"list"
+          listName = if listParam.len > 0: listParam else: "default"
+          following = await getListMembers(listName)
+          cursor = @"cursor"
+        if following.len > 0:
+          let timeline = await fetchFeed(following, prefs, cursor, prefs.feedStrategy, listName)
+          respJson toJson(timeline)
+        else:
+          respJson emptyTimelineJson()
+      
+      if path.startsWith("/@") or (path.len > 1 and path[1] != 'i' and '/' notin path[1..^1]):
+        let 
+          name = if path.startsWith("/@"): path[2..^1] else: path[1..^1]
+          tab = @"tab"
+          prefs = requestPrefs()
+          after = getCursor()
+        
+        var query = getQuery(request, tab, name)
+        try:
+          let profile = await fetchProfile(after, query)
+          if profile.user.id.len == 0:
+            respJson(errorJson("NOT_FOUND", "User not found"), Http404)
+          respJson(toJson(profile, prefs))
+        except RateLimitError:
+          respJson(errorJson("RATE_LIMITED", "Instance has been rate limited."), Http429)
+        except NoSessionsError:
+          respJson(errorJson("RATE_LIMITED", "Instance has no auth tokens, or is fully rate limited."), Http429)
+        except:
+          let e = getCurrentException()
+          respJson(errorJson("UNKNOWN_ERROR", $e.name & ": " & e.msg), Http500)
+
     # skip all file URLs
     cond "." notin request.path
     applyUrlPrefs()
 
-  get "/pinned":
-    respPinned(cfg)
+  get "/favicon.ico":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
 
-  post "/pin":
-    respPin(cfg)
+  get "/apple-touch-icon.png":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
 
-  post "/unpin":
-    respUnpin(cfg)
+  get "/favicon-32x32.png":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
+
+  get "/favicon-16x16.png":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
+
+  get "/android-chrome-192x192.png":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
+
+  get "/android-chrome-384x384.png":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
+
+  get "/android-chrome-512x512.png":
+    cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
+    sendFile(cfg.staticDir / cfg.favicon)
 
   get "/":
+    let acceptJson = acceptJson()
     let
       prefs = requestPrefs()
       listParam = @"list"
@@ -96,6 +186,9 @@ routes:
       lists = await getListNames()
     if following.len > 0:
       let timeline = await fetchFeed(following, prefs, cursor, prefs.feedStrategy, listName)
+      if acceptJson:
+        respJson toJson(timeline)
+
       let tweets = renderTimelineTweets(timeline, prefs, "/", listName = listName)
       let body = buildHtml(tdiv(class="timeline-container")):
         tweets
@@ -104,6 +197,9 @@ routes:
       else:
         resp renderMain(body, request, cfg, prefs, listName = listName, lists = lists)
     else:
+      if acceptJson:
+        respJson emptyTimelineJson()
+
       resp renderMain(renderSearch(), request, cfg, prefs, listName = listName, lists = lists)
 
   get "/about":
@@ -123,30 +219,10 @@ routes:
   error Http404:
     resp Http404, showError("Page not found", cfg)
 
-  error InternalError:
-    echo error.exc.name, ": ", error.exc.msg
-    const link = a("open a GitHub issue", href = issuesUrl)
-    resp Http500, showError(
-      &"An error occurred, please {link} with the URL you tried to visit.", cfg)
-
-  error BadClientError:
-    echo error.exc.name, ": ", error.exc.msg
-    resp Http500, showError("Network error occurred, please try again.", cfg)
-
-  error RateLimitError:
-    const link = a("another instance", href = instancesUrl)
-    resp Http429, showError(
-      &"Instance has been rate limited.<br>Use {link} or try again later.", cfg)
-
-  error NoSessionsError:
-    const link = a("another instance", href = instancesUrl)
-    resp Http429, showError(
-      &"Instance has no auth tokens, or is fully rate limited.<br>Use {link} or try again later.", cfg)
-
+  extend timeline, ""
   extend rss, ""
   extend status, ""
   extend search, ""
-  extend timeline, ""
   extend media, ""
   extend list, ""
   extend preferences, ""
