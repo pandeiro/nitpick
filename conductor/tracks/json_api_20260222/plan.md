@@ -58,12 +58,12 @@
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: User Content & Actions' (Protocol in workflow.md)
 
 ## Phase 4: List Management
-- [ ] Task: Enable JSON for List Management Actions (`POST /lists/*`)
-    - [ ] Write failing test: Verify create, delete, rename, add/remove member actions return JSON
-    - [ ] Implement: Update `follow.nim`
-    - [ ] Verify: Run tests
-- [ ] Task: Enable JSON for List Members (`GET /i/lists/<id>/members`)
-    - [ ] Write failing test: Verify `GET /i/lists/<id>/members` returns JSON
-    - [ ] Implement: Update `list.nim`
-    - [ ] Verify: Run tests
+- [ ] Task: Enable JSON for List Management Actions (`POST /lists/*`) (173f50b)
+    - [x] Write failing test: Verify create, delete, rename, add/remove member actions return JSON
+    - [x] Implement: Update `follow.nim`
+    - [x] Verify: Run tests
+- [ ] Task: Enable JSON for List Members (`GET /i/lists/<id>/members`) (already done)
+    - [x] Write failing test: Verify `GET /i/lists/<id>/members` returns JSON
+    - [x] Implement: Update `list.nim`
+    - [x] Verify: Run tests
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: List Management' (Protocol in workflow.md)
