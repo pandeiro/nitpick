@@ -264,7 +264,7 @@ type
   Profile* = object
     user*: User
     photoRail*: PhotoRail
-    pinned*: Tweet
+    pinned*: Option[Tweet]
     tweets*: Timeline
 
   List* = object

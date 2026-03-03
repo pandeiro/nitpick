@@ -60,8 +60,8 @@ proc fetchProfile*(after: string; query: Query; skipRail=false): Future[Profile]
 
   result.tweets.query = query
   
-  if result.pinned != nil:
-    await cache(result.pinned)
+  if result.pinned.isSome:
+    await cache(result.pinned.get)
   await cacheThreads(result.tweets.content)
   
   await setPinnedStatus(result.tweets.content)
