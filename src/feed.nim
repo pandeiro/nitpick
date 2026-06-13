@@ -7,7 +7,7 @@ proc extractTweets(timeline: Timeline): seq[Tweet] =
     for t in thread:
       result.add t
 
-const refreshBatchSize = 5
+const refreshBatchSize = 3
 
 var skipCounters = initTable[string, int]()  # module-level: consecutive failures per user
 

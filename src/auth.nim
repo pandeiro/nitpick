@@ -166,15 +166,24 @@ proc release*(session: Session) =
   dec session.pending
 
 proc getSession*(req: ApiReq): Future[Session] {.async.} =
-  for i in 0 ..< sessionPool.len:
-    if result.isReady(req): break
-    result = sessionPool.sample()
+  const maxWaitMs = 60_000
+  var waited = 0
 
-  if not result.isNil and result.isReady(req):
-    inc result.pending
-  else:
-    log "no sessions available for API: ", req.cookie.endpoint
-    raise noSessionsError()
+  while waited < maxWaitMs:
+    result = nil
+    for i in 0 ..< sessionPool.len:
+      if result.isReady(req): break
+      result = sessionPool.sample()
+
+    if not result.isNil and result.isReady(req):
+      inc result.pending
+      return result
+
+    await sleepAsync(500)
+    waited += 500
+
+  log "no sessions available for API: ", req.cookie.endpoint
+  raise noSessionsError()
 
 proc setLimited*(session: Session; req: ApiReq) =
   let api = req.endpoint(session)
