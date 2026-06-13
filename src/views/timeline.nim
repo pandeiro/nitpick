@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import strutils, strformat, algorithm, uri, options
+import strutils, strformat, algorithm, uri, options, times
 import karax/[karaxdsl, vdom, vstyles]
 
 import ".."/[types, query, formatters]
@@ -95,9 +95,27 @@ proc renderTimelineUsers*(results: Result[User]; prefs: Prefs; path=""): VNode =
 
 proc renderFeedHeader*(results: Timeline; listName = "default"): VNode =
   let displayName = if listName == "default": "Default" else: listName
-  buildHtml(header(class="feed-header", style={display: "none"})):
-    script(type="text/javascript"):
-      text "console.log('[feed:" & displayName & "] Showing tweets from " & $results.sampledCount & "/" & $results.followingCount & " followed users. Last updated: " & formatTime(results.lastUpdated) & "');"
+  let feedAge = if results.lastUpdated > 0:
+    let now = epochTime().int
+    let age = now - results.lastUpdated
+    if age < 60:
+      $age & "s ago"
+    elif age < 3600:
+      $(age div 60) & "m ago"
+    else:
+      $(age div 3600) & "h ago"
+  else:
+    "never"
+  buildHtml(header(class="feed-header")):
+    tdiv(class="feed-header-info"):
+      span:
+        text "Feed - " & displayName & " (" & $results.sampledCount & "/" & $results.followingCount & ")"
+    tdiv(class="feed-header-age"):
+      span(class="feed-age-badge"):
+        text "updated " & feedAge
+      form(`method`="post", action="/feed/refresh", class="feed-refresh-form"):
+        button(`type`="submit", class="feed-refresh-btn", title="Refresh now"):
+          text "↻"
 
 proc renderTimelineTweets*(results: Timeline; prefs: Prefs; path: string;
                            pinned=none(Tweet); listName = "default"): VNode =

@@ -11,7 +11,7 @@ import views/[general, about, timeline]
 import json_api
 import routes/[
   preferences, timeline, status, media, search, rss, list, debug,
-  unsupported, embed, resolver, router_utils, follow, pinned]
+  unsupported, embed, resolver, router_utils, follow, pinned, feed]
 
 const instancesUrl = "https://github.com/zedeus/nitter/wiki/Instances"
 const issuesUrl = "https://github.com/zedeus/nitter/issues"
@@ -52,7 +52,7 @@ waitFor initRedisPool(cfg)
 stdout.write &"Connected to Redis at {cfg.redisHost}:{cfg.redisPort}\n"
 stdout.flushFile
 
-asyncCheck startFeedRefresher(cfg.feedRefreshMinutes * 60)
+asyncCheck startFeedRefresher(cfg.feedRefreshMinutes * 60, cfg.staggeredRefresh)
 
 createUnsupportedRouter(cfg)
 createResolverRouter(cfg)
@@ -66,6 +66,7 @@ createEmbedRouter(cfg)
 createRssRouter(cfg)
 createDebugRouter(cfg)
 createFollowRouter(cfg)
+createFeedRouter(cfg)
 
 settings:
   port = Port(cfg.port)
@@ -165,6 +166,8 @@ routes:
     # skip all file URLs
     cond "." notin request.path
     applyUrlPrefs()
+
+
 
   get "/favicon.ico":
     cond cfg.favicon != "favicon.ico" and fileExists(cfg.staticDir / cfg.favicon)
@@ -271,4 +274,5 @@ routes:
   extend debug, ""
   extend unsupported, ""
   extend follow, ""
+  extend feedRoutes, ""
   extend pinned, ""

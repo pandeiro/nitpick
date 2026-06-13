@@ -301,6 +301,7 @@ type
     disableTid*: bool
     maxConcurrentReqs*: int
     feedRefreshMinutes*: int
+    staggeredRefresh*: bool
 
     rssCacheTime*: int
     listCacheTime*: int

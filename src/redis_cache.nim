@@ -429,9 +429,12 @@ proc getListFeed*(name: string): Future[Option[GlobalFeed]] {.async.} =
       echo "Decompressing list feed failed"
   return none(GlobalFeed)
 
-proc updateListFeed*(name: string; newTweets: seq[Tweet]) {.async.} =
+proc updateListFeed*(name: string; newTweets: seq[Tweet]): Future[int] {.async.} =
+  ## Updates the list feed in Redis with newly fetched tweets.
+  ## Returns the count of *new* tweets added (after dedup).
   let existing = await getListFeed(name)
   var feed: GlobalFeed
+  var newCount = 0
 
   if existing.isSome:
     feed = existing.get()
@@ -439,6 +442,7 @@ proc updateListFeed*(name: string; newTweets: seq[Tweet]) {.async.} =
   for t in newTweets:
     if t.id notin feed.tweetIds:
       feed.tweetIds.add t.id
+      inc newCount
 
   if feed.tweetIds.len > 0:
     feed.tweetIds.sort(SortOrder.Descending)
@@ -448,10 +452,31 @@ proc updateListFeed*(name: string; newTweets: seq[Tweet]) {.async.} =
   feed.lastUpdated = getTime().toUnix()
 
   await setEx(listFeedKey(name), 3600, compress(toFlatty(feed)))
+  return newCount
 
 proc clearListFeed*(name: string) {.async.} =
   pool.withAcquire(r):
     discard await r.del(listFeedKey(name))
+
+# ---------------------------------------------------------------------------
+# Cycle metrics persistence
+# ---------------------------------------------------------------------------
+
+template metricsLatestKey(): string = "nitpick:feed:metrics:latest"
+
+proc saveCycleMetrics*(jsonStr: string) {.async.} =
+  ## Persist the last completed cycle metrics to Redis.
+  ## Called from feed.nim after each cycle completes.
+  if jsonStr.len == 0: return
+  pool.withAcquire(r):
+    dawait r.setEx(metricsLatestKey(), 86400, jsonStr)  # 24h TTL
+
+proc loadCycleMetrics*(): Future[string] {.async.} =
+  ## Load persisted cycle metrics from Redis.
+  pool.withAcquire(r):
+    result = await r.get(metricsLatestKey())
+    if result == redisNil:
+      result = ""
 
 proc clearFollowingList*() {.async.} =
   pool.withAcquire(r):
