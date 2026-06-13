@@ -97,7 +97,7 @@ proc renderFeedHeader*(results: Timeline; listName = "default"): VNode =
   let displayName = if listName == "default": "Default" else: listName
   buildHtml(header(class="feed-header", style={display: "none"})):
     script(type="text/javascript"):
-      text &"console.log('[feed:{displayName}] Showing tweets from {results.sampledCount}/{results.followingCount} followed users. Last updated: {formatTime(results.lastUpdated)}');"
+      text "console.log('[feed:" & displayName & "] Showing tweets from " & $results.sampledCount & "/" & $results.followingCount & " followed users. Last updated: " & formatTime(results.lastUpdated) & "');"
 
 proc renderTimelineTweets*(results: Timeline; prefs: Prefs; path: string;
                            pinned=none(Tweet); listName = "default"): VNode =

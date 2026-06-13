@@ -309,53 +309,34 @@ proc getGlobalFeed*(): Future[Option[GlobalFeed]] {.async.} =
       echo "Decompressing global feed failed"
   return none(GlobalFeed)
 
-proc updateGlobalFeed*(newTweets: seq[Tweet]; 
-                       searchPool: seq[SearchPoolEntry]) {.async.} =
+proc updateGlobalFeed*(newTweets: seq[Tweet]) {.async.} =
   ## Updates the global feed in Redis with newly fetched tweets.
-  ## Implements "Accumulation" logic:
-  ## - Merges new tweet IDs with existing ones.
-  ## - De-duplicates and sorts IDs in descending (chronological) order.
-  ## - Keeps the total count capped at 1000.
-  ## - Updates the search pool with new cursors for pagination.
-  ## - Resets the 60-minute TTL on every update.
   let existing = await getGlobalFeed()
   var feed: GlobalFeed
-  
+
   if existing.isSome:
     feed = existing.get()
-  
-  # Accumulate and de-duplicate tweet IDs
+
   for t in newTweets:
     if t.id notin feed.tweetIds:
       feed.tweetIds.add t.id
-  
+
   if feed.tweetIds.len > 0:
-    # Sort IDs descending (chronological)
     feed.tweetIds.sort(SortOrder.Descending)
-    # Keep only the latest 1000 tweets in global feed cache
     if feed.tweetIds.len > 1000:
       feed.tweetIds.setLen(1000)
-  
-  feed.searchPool = searchPool
+
   feed.lastUpdated = getTime().toUnix()
-  
-  # TTL of 60 minutes (3600 seconds) for the feed accumulation window
+
   await setEx(globalFeedKey(), 3600, compress(toFlatty(feed)))
 
 proc getGlobalFeedDebug*(): Future[JsonNode] {.async.} =
   let feed = await getGlobalFeed()
   if feed.isSome:
     let f = feed.get()
-    var poolJson = newJArray()
-    for entry in f.searchPool:
-      poolJson.add %*{
-        "users": entry.users,
-        "cursor": entry.cursor
-      }
     return %*{
       "tweetIds": f.tweetIds,
-      "lastUpdated": f.lastUpdated,
-      "searchPool": poolJson
+      "lastUpdated": f.lastUpdated
     }
   else:
     return %*{}
@@ -448,26 +429,24 @@ proc getListFeed*(name: string): Future[Option[GlobalFeed]] {.async.} =
       echo "Decompressing list feed failed"
   return none(GlobalFeed)
 
-proc updateListFeed*(name: string; newTweets: seq[Tweet]; 
-                     searchPool: seq[SearchPoolEntry]) {.async.} =
+proc updateListFeed*(name: string; newTweets: seq[Tweet]) {.async.} =
   let existing = await getListFeed(name)
   var feed: GlobalFeed
-  
+
   if existing.isSome:
     feed = existing.get()
-  
+
   for t in newTweets:
     if t.id notin feed.tweetIds:
       feed.tweetIds.add t.id
-  
+
   if feed.tweetIds.len > 0:
     feed.tweetIds.sort(SortOrder.Descending)
     if feed.tweetIds.len > 1000:
       feed.tweetIds.setLen(1000)
-  
-  feed.searchPool = searchPool
+
   feed.lastUpdated = getTime().toUnix()
-  
+
   await setEx(listFeedKey(name), 3600, compress(toFlatty(feed)))
 
 proc clearListFeed*(name: string) {.async.} =

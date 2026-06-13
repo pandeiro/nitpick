@@ -226,14 +226,9 @@ type
 
   Tweets* = seq[Tweet]
 
-  SearchPoolEntry* = object
-    users*: seq[string]
-    cursor*: string
-
   GlobalFeed* = object
     tweetIds*: seq[int64]
     lastUpdated*: int64
-    searchPool*: seq[SearchPoolEntry]
 
   Result*[T] = object
     content*: seq[T]
@@ -305,6 +300,7 @@ type
     apiProxy*: string
     disableTid*: bool
     maxConcurrentReqs*: int
+    feedRefreshMinutes*: int
 
     rssCacheTime*: int
     listCacheTime*: int

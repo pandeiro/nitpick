@@ -52,6 +52,8 @@ waitFor initRedisPool(cfg)
 stdout.write &"Connected to Redis at {cfg.redisHost}:{cfg.redisPort}\n"
 stdout.flushFile
 
+asyncCheck startFeedRefresher(cfg.feedRefreshMinutes * 60)
+
 createUnsupportedRouter(cfg)
 createResolverRouter(cfg)
 createPrefRouter(cfg)
@@ -111,14 +113,31 @@ routes:
       let path = request.path
       if path == "/":
         let
-          prefs = requestPrefs()
           listParam = @"list"
           listName = if listParam.len > 0: listParam else: "default"
           following = await getListMembers(listName)
-          cursor = @"cursor"
         if following.len > 0:
-          let timeline = await fetchFeed(following, prefs, cursor, prefs.feedStrategy, listName)
-          respJson toJson(timeline)
+          let feedData = await getListFeed(listName)
+          if feedData.isSome:
+            let f = feedData.get()
+            let latestIds = if f.tweetIds.len > 50: f.tweetIds[0..<50] else: f.tweetIds
+            let tweets = await getCachedTweets(latestIds)
+            var threads: seq[Tweets]
+            for t in tweets:
+              if not t.isNil:
+                threads.add @[t]
+            let timeline = Timeline(
+              content: threads,
+              beginning: true,
+              bottom: "",
+              query: Query(),
+              sampledCount: f.tweetIds.len,
+              followingCount: following.len,
+              lastUpdated: f.lastUpdated
+            )
+            respJson toJson(timeline)
+          else:
+            respJson emptyTimelineJson()
         else:
           respJson emptyTimelineJson()
       
@@ -182,20 +201,41 @@ routes:
       listParam = @"list"
       listName = if listParam.len > 0: listParam else: "default"
       following = await getListMembers(listName)
-      cursor = @"cursor"
       lists = await getListNames()
     if following.len > 0:
-      let timeline = await fetchFeed(following, prefs, cursor, prefs.feedStrategy, listName)
-      if acceptJson:
-        respJson toJson(timeline)
+      let feedData = await getListFeed(listName)
+      if feedData.isSome:
+        let f = feedData.get()
+        let latestIds = if f.tweetIds.len > 50: f.tweetIds[0..<50] else: f.tweetIds
+        let tweets = await getCachedTweets(latestIds)
+        var threads: seq[Tweets]
+        for t in tweets:
+          if not t.isNil:
+            threads.add @[t]
+        let timeline = Timeline(
+          content: threads,
+          beginning: true,
+          bottom: "",
+          query: Query(),
+          sampledCount: f.tweetIds.len,
+          followingCount: following.len,
+          lastUpdated: f.lastUpdated
+        )
+        if acceptJson:
+          respJson toJson(timeline)
 
-      let tweets = renderTimelineTweets(timeline, prefs, "/", listName = listName)
-      let body = buildHtml(tdiv(class="timeline-container")):
-        tweets
-      if @"scroll".len > 0:
-        resp $body
+        let tweetsVNode = renderTimelineTweets(timeline, prefs, "/", listName = listName)
+        let body = buildHtml(tdiv(class="timeline-container")):
+          tweetsVNode
+        if @"scroll".len > 0:
+          resp $body
+        else:
+          resp renderMain(body, request, cfg, prefs, listName = listName, lists = lists)
       else:
-        resp renderMain(body, request, cfg, prefs, listName = listName, lists = lists)
+        # Feed not yet populated by background worker
+        if acceptJson:
+          respJson emptyTimelineJson()
+        resp renderMain(renderSearch(), request, cfg, prefs, listName = listName, lists = lists)
     else:
       if acceptJson:
         respJson emptyTimelineJson()
