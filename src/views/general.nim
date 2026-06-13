@@ -52,6 +52,10 @@ proc renderNavbar(cfg: Config; req: Request; rss, canonical: string;
         a(href="https://liberapay.com/zedeus"): verbatim lp
         icon "info", title="About", href="/about"
         icon "cog", title="Preferences", href=("/settings?referer=" & encodeUrl(path))
+        icon "ok", title="Feed Status", href="/feed/status"
+        if listName.len > 0:
+          form(`method`="post", action="/feed/refresh", class="icon-container"):
+            button(`type`="submit", class="icon-refresh icon-container", title="Refresh feed now")
 
 proc renderHead*(prefs: Prefs; cfg: Config; req: Request; titleText=""; desc="";
                  video=""; images: seq[string] = @[]; banner=""; ogTitle="";
