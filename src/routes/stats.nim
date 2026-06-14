@@ -44,21 +44,24 @@ proc collectFeedStats(): Future[JsonNode] {.async.} =
     "lists": listsJson
   }
 
+template respStats*(cfg: Config) =
+  let
+    prefs = requestPrefs()
+    feedStats = await collectFeedStats()
+    poolHealth = getSessionPoolHealth()
+    counters = await getStatsCounters()
+    skipCounters = getSkipCountersJson()
+  let statsJson = %*{
+    "feed": feedStats,
+    "sessions": poolHealth{"sessions"},
+    "requests": poolHealth{"requests"},
+    "counters": counters,
+    "skipCounters": skipCounters
+  }
+  let html = renderStats(statsJson)
+  resp renderMain(html, request, cfg, prefs, "Stats")
+
 proc createStatsRouter*(cfg: Config) =
   router stats:
     get "/stats":
-      let
-        prefs = requestPrefs()
-        feedStats = await collectFeedStats()
-        poolHealth = getSessionPoolHealth()
-        counters = await getStatsCounters()
-        skipCounters = getSkipCountersJson()
-      let statsJson = %*{
-        "feed": feedStats,
-        "sessions": poolHealth{"sessions"},
-        "requests": poolHealth{"requests"},
-        "counters": counters,
-        "skipCounters": skipCounters
-      }
-      let html = renderStats(statsJson)
-      resp renderMain(html, request, cfg, prefs, "Stats")
+      respStats(cfg)
