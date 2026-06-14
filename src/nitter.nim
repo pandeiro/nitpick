@@ -11,7 +11,7 @@ import views/[general, about, timeline]
 import json_api
 import routes/[
   preferences, timeline, status, media, search, rss, list, debug,
-  unsupported, embed, resolver, router_utils, follow, pinned]
+  unsupported, embed, resolver, router_utils, follow, pinned, stats]
 
 const instancesUrl = "https://github.com/zedeus/nitter/wiki/Instances"
 const issuesUrl = "https://github.com/zedeus/nitter/issues"
@@ -66,6 +66,7 @@ createEmbedRouter(cfg)
 createRssRouter(cfg)
 createDebugRouter(cfg)
 createFollowRouter(cfg)
+createStatsRouter(cfg)
 
 settings:
   port = Port(cfg.port)

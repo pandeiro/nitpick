@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-only
-import asyncdispatch, options, logging, strutils, tables, random
+import asyncdispatch, options, logging, strutils, tables, random, json
 import types, api, redis_cache
 
 proc extractTweets(timeline: Timeline): seq[Tweet] =
@@ -73,6 +73,7 @@ proc refreshUserChunk(users: seq[string]) {.async.} =
           warn "[feed-refresher] Skipping '", batchUsers[i], "' for ~10 cycles (", failures, " failures): ", e.msg
         else:
           warn "[feed-refresher] Fetch failed for '", batchUsers[i], "' (", failures, "/3): ", e.msg
+        discard await incrStatsCounter("nitpick:stats:errors")
         continue
 
       if userTweets.len > 0:
@@ -81,11 +82,21 @@ proc refreshUserChunk(users: seq[string]) {.async.} =
         for listName in lists:
           await updateListFeed(listName, userTweets)
         info "[feed-refresher] Accumulated ", userTweets.len, " tweets for '", batchUsers[i], "'"
+        discard await incrStatsCounter("nitpick:stats:refreshes")
+        discard await incrStatsCounter("nitpick:stats:ingested", userTweets.len)
 
 proc refreshAllLists*() {.async.} =
   ## Refresh all follow lists. (Maintained for backward compatibility.)
   let users = await getAllUsers()
   await refreshUserChunk(users)
+
+proc getSkipCounters*(): Table[string, int] =
+  skipCounters
+
+proc getSkipCountersJson*(): JsonNode =
+  result = newJObject()
+  for user, count in skipCounters:
+    result[user] = %count
 
 proc startFeedRefresher*(intervalSeconds: int) {.async.} =
   ## Background loop: round-robin through all users in 3 chunks, shuffling each cycle.

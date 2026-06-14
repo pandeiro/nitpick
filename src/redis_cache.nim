@@ -453,6 +453,23 @@ proc clearListFeed*(name: string) {.async.} =
   pool.withAcquire(r):
     discard await r.del(listFeedKey(name))
 
+proc incrStatsCounter*(key: string; count: int = 1): Future[int] {.async.} =
+  pool.withAcquire(r):
+    result = await r.incrBy(key, count)
+    dawait r.expire(key, 7200)
+
+proc getStatsCounters*(): Future[JsonNode] {.async.} =
+  pool.withAcquire(r):
+    let
+      ingested = await r.get("nitpick:stats:ingested")
+      refreshes = await r.get("nitpick:stats:refreshes")
+      errors = await r.get("nitpick:stats:errors")
+    result = %*{
+      "ingested": (if ingested.len > 0: ingested.parseInt else: 0),
+      "refreshes": (if refreshes.len > 0: refreshes.parseInt else: 0),
+      "errors": (if errors.len > 0: errors.parseInt else: 0)
+    }
+
 proc clearFollowingList*() {.async.} =
   pool.withAcquire(r):
     discard await r.del(followingKey())
