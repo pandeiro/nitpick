@@ -142,7 +142,7 @@ routes:
         else:
           respJson emptyTimelineJson()
       
-      if path.startsWith("/@") or (path.len > 1 and path[1] != 'i' and '/' notin path[1..^1]):
+      if path notin ["/stats"] and (path.startsWith("/@") or (path.len > 1 and path[1] != 'i' and '/' notin path[1..^1])):
         let 
           name = if path.startsWith("/@"): path[2..^1] else: path[1..^1]
           tab = @"tab"
@@ -273,3 +273,4 @@ routes:
   extend unsupported, ""
   extend follow, ""
   extend pinned, ""
+  extend stats, ""

@@ -123,7 +123,7 @@ proc createTimelineRouter*(cfg: Config) =
     get "/@name/?@tab?/?":
       cond request.reqMethod == HttpGet
       cond '.' notin @"name"
-      cond @"name" notin ["pic", "gif", "video", "search", "settings", "login", "intent", "i", "following", "pinned", "pin", "unpin"]
+      cond @"name" notin ["pic", "gif", "video", "search", "settings", "login", "intent", "i", "following", "pinned", "pin", "unpin", "stats"]
       cond @"name".allCharsInSet({'a'..'z', 'A'..'Z', '0'..'9', '_', ','})
       cond @"tab" in ["with_replies", "media", "search", ""]
       let
