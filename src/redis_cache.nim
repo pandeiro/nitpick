@@ -465,9 +465,9 @@ proc getStatsCounters*(): Future[JsonNode] {.async.} =
       refreshes = await r.get("nitpick:stats:refreshes")
       errors = await r.get("nitpick:stats:errors")
     result = %*{
-      "ingested": (if ingested.len > 0: ingested.parseInt else: 0),
-      "refreshes": (if refreshes.len > 0: refreshes.parseInt else: 0),
-      "errors": (if errors.len > 0: errors.parseInt else: 0)
+      "ingested": (if ingested != redisNil: ingested.parseInt else: 0),
+      "refreshes": (if refreshes != redisNil: refreshes.parseInt else: 0),
+      "errors": (if errors != redisNil: errors.parseInt else: 0)
     }
 
 proc clearFollowingList*() {.async.} =
