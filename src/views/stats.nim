@@ -25,8 +25,7 @@ proc renderStats*(statsJson: JsonNode): VNode =
               td: text feed{"lastUpdated"}.getStr()
 
     # ── Lists ──
-    let lists = statsJson{"lists"}
-    if lists.kind == JArray and lists.len > 0:
+    if feed.kind != JNull and feed{"lists"}.kind == JArray and feed{"lists"}.len > 0:
       tdiv(class="stats-section"):
         h3: text "Following Lists"
         table(class="stats-table"):
@@ -37,12 +36,13 @@ proc renderStats*(statsJson: JsonNode): VNode =
               th: text "Tweets Cached"
               th: text "Last Updated"
           tbody:
-            for lst in lists.items:
+            for lst in feed{"lists"}.items:
               tr:
                 td: text lst{"name"}.getStr()
                 td: text $lst{"members"}.getInt()
                 td: text $lst{"tweets"}.getInt()
                 td: text lst{"lastUpdated"}.getStr()
+
 
     # ── Ingest Throughput ──
     let counters = statsJson{"counters"}
