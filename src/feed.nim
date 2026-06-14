@@ -54,7 +54,7 @@ proc refreshUserChunk(users: seq[string]) {.async.} =
         continue
       if userId == "suspended":
         continue
-      futures.add getGraphUserTweets(userId, TimelineKind.tweets)
+      futures.add getGraphUserTweets(userId, TimelineKind.tweets, name=user)
       batchUsers.add user
 
     if futures.len == 0:
